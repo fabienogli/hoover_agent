@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using HooverAgent.Environment;
 
 namespace HooverAgent
 {
@@ -6,7 +8,10 @@ namespace HooverAgent
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Mansion mansion = new Mansion(100);
+            ThreadStart envStarter = mansion.Run;
+            new Thread(envStarter).Start();
+            
         }
     }
 }
