@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using HooverAgent.Agent;
+using Action = System.Action;
 
 namespace HooverAgent.Environment
 {
@@ -7,6 +9,11 @@ namespace HooverAgent.Environment
         private List<Object> Rooms;
         private bool _running;
 
+        public Feedback Try(Action action)
+        {
+            return new Feedback();    
+        }
+ 
         private bool Running
         {
             get => _running;
