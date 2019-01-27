@@ -63,10 +63,17 @@ namespace HooverAgent.Environment
         {
             //If some proba
             //@todo : Generate with timer => Use StopWatch i.e : Every n seconds, there is a probability p of generating dirt
+            //todo : Verify dirt distribution (should not fill all map)
 
             return Rand.Next(100) < 5;
         }
 
+        private bool ShouldGenerateJewel()
+        {
+            //If some proba
+            return Rand.Next(100) < 5;
+        }
+        
         private void GenerateDirt()
         {
             GenerateObject(Object.Dirt);
@@ -82,32 +89,15 @@ namespace HooverAgent.Environment
             int randomIndex = Rand.Next(Rooms.Count);
             Object el = Rooms[randomIndex];
 
-            if ((el & obj) != 0)
+            if (el.HasFlag(obj))
             {
+                //Already set so no need to reset it
                 return;
             }
 
             Rooms[randomIndex] |= obj;
             _observer.OnNext(this);
         }
-
-        private bool ShouldGenerateJewel()
-        {
-            //If some proba
-            return false;
-        }
-
-        public List<Object> GetRoomsCopy()
-        {
-           List<Object> roomCopy = new List<Object>(Rooms.Count);
-           foreach (var room in Rooms)
-           {
-               roomCopy.Add(room);
-           }
-
-           return roomCopy;
-        }
-
         public IDisposable Subscribe(IObserver<Mansion> observer)
         {
             _observer = observer;

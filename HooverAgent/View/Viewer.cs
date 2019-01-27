@@ -53,23 +53,33 @@ namespace HooverAgent.View
                 currentEpoch = epochs.Dequeue();
             }
         }
+
         private void RenderLegend()
         {
-            //todo  Compléter légende
-            Console.WriteLine("a=all, d=dirt, j=jewel, x=agent, -=empty ...");
+            string agent = ObjectStringer.ObjectToString(Object.Agent);
+            string dirt = ObjectStringer.ObjectToString(Object.Dirt);
+            string jewel = ObjectStringer.ObjectToString(Object.Jewel);
+            string all = ObjectStringer.ObjectToString(Object.Dirt | Object.Jewel | Object.Agent);
+            
+            string dirtAgent = ObjectStringer.ObjectToString(Object.Agent | Object.Dirt);
+            string jewelAgent = ObjectStringer.ObjectToString(Object.Agent | Object.Jewel);
+            string dirtJewel = ObjectStringer.ObjectToString(Object.Dirt | Object.Jewel);
+            string empty = ObjectStringer.ObjectToString(Object.Nothing);
+            string legend = $"{agent}=agent {dirt}=dirt {jewel}=jewel {all}=all {dirtAgent}=dirt+agent {jewelAgent}=jewel+agent {dirtJewel}=dirt+jewel {empty}=empty";
+            Console.WriteLine(legend);
         }
 
         private void RenderMap()
         {
             //Assuming the map is squared
             int size = (int) Math.Sqrt(currentEpoch.Rooms.Count);
-           
+
             for (int col = 0; col < size; col++)
             {
-                for(int row = 0; row < size; row++)
+                for (int row = 0; row < size; row++)
                 {
                     Object obj = currentEpoch.Rooms[Convert2dTo1d(col, row)];
-                    string objectString = ObjectToString(obj);
+                    string objectString = ObjectStringer.ObjectToString(obj);
                     if (row == 0)
                     {
                         Console.Write("| " + objectString + " | ");
@@ -77,37 +87,13 @@ namespace HooverAgent.View
                     else
                     {
                         Console.Write(objectString + " | ");
-                        
                     }
-                    
                 }
+
                 Console.WriteLine();
-            }            
-        }
-        public string ObjectToString(Object obj) 
-        {
-            switch (obj)
-            {
-                case Object.Nothing | Object.Dirt:
-                    return "d";
-                case Object.Nothing | Object.Jewel:
-                    return "j";
-                case Object.Nothing:
-                    return "-";
-                case Object.Nothing | Object.Agent:
-                    return "x";
-                case Object.Dirt | Object.Agent:
-                   return "0";
-                case Object.Jewel | Object.Agent:
-                    return "1";
-                case Object.Dirt | Object.Jewel:
-                    return "b";
-                case Object.Dirt | Object.Jewel | Object.Agent:
-                    return "a";
-                default:
-                    return "-";
             }
         }
+
 
         public int Convert2dTo1d(int col, int row)
         {
