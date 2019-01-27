@@ -9,14 +9,15 @@ namespace HooverAgent.View
 {
     public class Viewer : IObserver<Mansion>
     {
+        private Queue<Mansion> epochs;
+        private Mansion currentEpoch;
 
-        private IDisposable _canceller;
-
-        public bool Running { get; set; }
+        private bool Running { get; set; }
 
         public Viewer()
         {
             Running = true;
+            epochs = new Queue<Mansion>();
         }
 
         public void Run()
@@ -34,23 +35,90 @@ namespace HooverAgent.View
                     //Render here
                     Render();
                 }
-               
             }
         }
 
         private void Render()
         {
-            //Render here
-            // Poll mansion copy from queue, if empty, running = false
-            // Display mansion rooms
-            // Display agent at pos
-            // Display perf
-            
+            Console.Clear();
+            GetNextEpoch();
+            RenderLegend();
+            RenderMap();
+        }
+
+        private void GetNextEpoch()
+        {
+            if (epochs.Count > 0)
+            {
+                currentEpoch = epochs.Dequeue();
+            }
+        }
+        private void RenderLegend()
+        {
+            //todo  Compléter légende
+            Console.WriteLine("a=all, d=dirt, j=jewel, x=agent, -=empty ...");
+        }
+
+        private void RenderMap()
+        {
+            //Assuming the map is squared
+            int size = (int) Math.Sqrt(currentEpoch.Rooms.Count);
+           
+            for (int col = 0; col < size; col++)
+            {
+                for(int row = 0; row < size; row++)
+                {
+                    Object obj = currentEpoch.Rooms[Convert2dTo1d(col, row)];
+                    string objectString = ObjectToString(obj);
+                    if (row == 0)
+                    {
+                        Console.Write("| " + objectString + " | ");
+                    }
+                    else
+                    {
+                        Console.Write(objectString + " | ");
+                        
+                    }
+                    
+                }
+                Console.WriteLine();
+            }            
+        }
+        public string ObjectToString(Object obj) 
+        {
+            switch (obj)
+            {
+                case Object.Nothing | Object.Dirt:
+                    return "d";
+                case Object.Nothing | Object.Jewel:
+                    return "j";
+                case Object.Nothing:
+                    return "-";
+                case Object.Nothing | Object.Agent:
+                    return "x";
+                case Object.Dirt | Object.Agent:
+                   return "0";
+                case Object.Jewel | Object.Agent:
+                    return "1";
+                case Object.Dirt | Object.Jewel:
+                    return "b";
+                case Object.Dirt | Object.Jewel | Object.Agent:
+                    return "a";
+                default:
+                    return "-";
+            }
+        }
+
+        public int Convert2dTo1d(int col, int row)
+        {
+            int rowLength = (int) Math.Sqrt(currentEpoch.Rooms.Count);
+            return row * rowLength + col;
         }
 
         public virtual void Subscribe(IObservable<Mansion> observable)
         {
-            _canceller = observable.Subscribe(this);
+            observable.Subscribe(this);
+            currentEpoch = (Mansion) observable;
         }
 
         public void OnCompleted()
@@ -61,17 +129,15 @@ namespace HooverAgent.View
 
         public void OnError(Exception error)
         {
-           /*
-            * Does nothing
-            */
+            /*
+             * Does nothing
+             */
         }
 
         public void OnNext(Mansion mansion)
         {
-            List<Object> rooms = mansion.GetRoomsCopy();
-           
-            //Get performance copy
-            //Get Agent position copy
+            Mansion copy = new Mansion(mansion);
+            epochs.Enqueue(copy);
         }
     }
 }

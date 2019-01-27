@@ -6,16 +6,15 @@ namespace HooverAgent.Environment
 {
     public class Mansion : IObservable<Mansion>
     {
-        private readonly List<Object> _rooms;
         private Random _rand;
         private IObserver<Mansion> _observer;
 
         public Mansion(int size)
         {
-            _rooms = new List<Object>(size);
+            Rooms = new List<Object>(size);
             for (var i = 0; i < size; i++)
             {
-                _rooms.Add(Object.Nothing);
+                Rooms.Add(Object.Nothing);
                 //Generate jewels and dirt on first run 
             }
 
@@ -25,11 +24,22 @@ namespace HooverAgent.Environment
             Rand = new Random(1);
         }
 
+        public Mansion(Mansion other)
+        {
+            Rooms = new List<Object>(other.Rooms.Count);
+            foreach (var room in other.Rooms)
+            {
+                Rooms.Add(room);
+            }
+            //Copy agent state (pos) 
+            //Copy performance 
+        }
+
         private bool Running { get; }
 
         private Random Rand { get; }
 
-        public List<Object> Rooms => _rooms;
+        public List<Object> Rooms { get; }
 
         public void Run()
         {
@@ -78,7 +88,6 @@ namespace HooverAgent.Environment
             }
 
             Rooms[randomIndex] |= obj;
-            
             _observer.OnNext(this);
         }
 
