@@ -1,33 +1,39 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace HooverAgent.Environment
 {
-    public class Mansion
+    public class Mansion : IObservable<Mansion>
     {
-        private List<Object> Rooms;
-        private bool _running;
-
-        private bool Running
-        {
-            get => _running;
-            set => _running = value;
-        }
+        private readonly List<Object> _rooms;
+        private Random _rand;
+        private IObserver<Mansion> _observer;
 
         public Mansion(int size)
         {
-            Rooms = new List<Object>(size);
+            _rooms = new List<Object>(size);
             for (var i = 0; i < size; i++)
             {
-                Rooms.Add(Object.Nothing);
+                _rooms.Add(Object.Nothing);
                 //Generate jewels and dirt on first run 
             }
 
             Running = true;
+            
+            //Initializing Random once to get uniform result, and seeding to control randomness
+            Rand = new Random(1);
         }
 
+        private bool Running { get; }
+
+        private Random Rand { get; }
+
+        public List<Object> Rooms => _rooms;
 
         public void Run()
         {
+            
             while (Running)
             {
                 if (ShouldGenerateDirt())
@@ -39,20 +45,42 @@ namespace HooverAgent.Environment
                 {
                     GenerateJewel();
                 }
+                Thread.Sleep(10);
             }
         }
 
         private bool ShouldGenerateDirt()
         {
             //If some proba
-            return false;
+            //@todo : Generate with timer => Use StopWatch i.e : Every n seconds, there is a probability p of generating dirt
+
+            return Rand.Next(100) < 5;
         }
 
         private void GenerateDirt()
         {
-            //Random generation of dirt
+            GenerateObject(Object.Dirt);
         }
+        
+        private void GenerateJewel()
+        {
+            GenerateObject(Object.Jewel);
+        }
+        
+        private void GenerateObject(Object obj)
+        {
+            int randomIndex = Rand.Next(Rooms.Count);
+            Object el = Rooms[randomIndex];
 
+            if ((el & obj) != 0)
+            {
+                return;
+            }
+
+            Rooms[randomIndex] |= obj;
+            
+            _observer.OnNext(this);
+        }
 
         private bool ShouldGenerateJewel()
         {
@@ -60,9 +88,22 @@ namespace HooverAgent.Environment
             return false;
         }
 
-        private void GenerateJewel()
+        public List<Object> GetRoomsCopy()
         {
-            //Random generation of Jewel
+           List<Object> roomCopy = new List<Object>(Rooms.Count);
+           foreach (var room in Rooms)
+           {
+               roomCopy.Add(room);
+           }
+
+           return roomCopy;
+        }
+
+        public IDisposable Subscribe(IObserver<Mansion> observer)
+        {
+            _observer = observer;
+            _observer.OnNext(this);
+            return null; //Maybe return an Unsubscriber
         }
     }
 }
