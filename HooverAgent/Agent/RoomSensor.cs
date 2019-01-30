@@ -7,7 +7,7 @@ namespace HooverAgent.Agent
     {
         public List<Entities> observe(Mansion env)
         {
-            throw new System.NotImplementedException();
+            return env.CopyRooms();
         }
     }
 }
