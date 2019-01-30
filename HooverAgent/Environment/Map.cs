@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace HooverAgent.Environment
 {
@@ -10,7 +11,11 @@ namespace HooverAgent.Environment
         public int Size => Rooms.Capacity;
 
         public int SquaredSize => (int) Math.Sqrt(Size);
+        
+        //Storing AgentPos to avoid computation
+        public int AgentPos { private get; set; }
 
+        private object _lock = new object();  
         public Map(int size)
         {
             Rooms = new List<Entity>(size);
@@ -24,6 +29,8 @@ namespace HooverAgent.Environment
             {
                 Rooms.Add(room);
             }
+
+            AgentPos = other.AgentPos;
         }
 
         private void Init()
@@ -36,12 +43,18 @@ namespace HooverAgent.Environment
 
         public void AddEntityAtPos(Entity flag, int pos)
         {
-            Rooms[pos] |= flag;
+            lock (_lock)
+            {
+                Rooms[pos] |= flag;    
+            }
         }
 
         public void RemoveEntityAtPos(Entity flag, int pos)
         {
-            Rooms[pos] &= ~flag;
+            lock (_lock)
+            {
+                Rooms[pos] &= ~flag;    
+            }
         }
 
         public bool ContainsEntityAtPos(Entity flag, int pos)
@@ -49,16 +62,54 @@ namespace HooverAgent.Environment
             return Rooms[pos].HasFlag(flag);
         }
 
-        public void MoveAgent(int from, int to)
+        public void MoveAgentTo(int pos)
         {
             var agent = Entity.Agent;
-            RemoveEntityAtPos(agent, from);
-            AddEntityAtPos(agent, to);
+            lock (_lock)
+            {
+                RemoveEntityAtPos(agent, AgentPos);
+                AddEntityAtPos(agent, pos);    
+            }
         }
 
         public Entity GetEntityAt(int pos)
         {
-            return Rooms[pos];
-        } 
+            lock (_lock)
+            {
+                return Rooms[pos];    
+            }
+        }
+
+        public void ApplyAction(Action action)
+        {
+            var newPos = AgentPos;
+            switch (action)
+            {
+                case Action.Idle:
+                    return;
+                case Action.Up:
+                    newPos -= SquaredSize;
+                    break;
+                case Action.Down:
+                    newPos += SquaredSize;
+                    break;
+                case Action.Left:
+                    newPos--;
+                    break;
+                case Action.Right:
+                    newPos++;
+                    break;
+                default:
+                    throw new InvalidDataException("No such action was implemented !");
+            }
+
+            if (newPos < 0 || newPos >= Size)
+            {
+                throw new IndexOutOfRangeException();
+            }
+
+            MoveAgentTo(newPos);
+            AgentPos = newPos;
+        }   
     }
 }

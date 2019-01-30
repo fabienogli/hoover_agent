@@ -76,11 +76,15 @@ namespace HooverAgent.View
             StringBuilder sb = new StringBuilder();
             for (int col = 0; col < size; col++)
             {
-                sb.Append("| ");
-                for (int row = 1; row < size; row++)
+                
+                for (int row = 0; row < size; row++)
                 {
-                    Entity obj = currentEpoch.Map.GetEntityAt(Convert2DTo1D(col, row));
+                    Entity obj = currentEpoch.Map.GetEntityAt(Convert2DTo1D(row, col));
                     string objectString = EntityStringer.ObjectToString(obj);
+                    if (row == 0)
+                    {
+                        sb.Append("| ");
+                    }
                     sb.Append(objectString)
                       .Append(" | ");
                 }
