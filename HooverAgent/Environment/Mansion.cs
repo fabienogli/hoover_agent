@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Action = HooverAgent.Agent.Action;
 
 namespace HooverAgent.Environment
 {
@@ -11,10 +12,10 @@ namespace HooverAgent.Environment
 
         public Mansion(int size)
         {
-            Rooms = new List<Object>(size);
+            Rooms = new List<Entities>(size);
             for (var i = 0; i < size; i++)
             {
-                Rooms.Add(Object.Nothing);
+                Rooms.Add(Entities.Nothing);
                 //Generate jewels and dirt on first run 
             }
 
@@ -26,7 +27,7 @@ namespace HooverAgent.Environment
 
         public Mansion(Mansion other)
         {
-            Rooms = new List<Object>(other.Rooms.Count);
+            Rooms = new List<Entities>(other.Rooms.Count);
             foreach (var room in other.Rooms)
             {
                 Rooms.Add(room);
@@ -39,7 +40,7 @@ namespace HooverAgent.Environment
 
         private Random Rand { get; }
 
-        public List<Object> Rooms { get; }
+        public List<Entities> Rooms { get; }
 
         public void Run()
         {
@@ -76,18 +77,18 @@ namespace HooverAgent.Environment
         
         private void GenerateDirt()
         {
-            GenerateObject(Object.Dirt);
+            GenerateObject(Entities.Dirt);
         }
         
         private void GenerateJewel()
         {
-            GenerateObject(Object.Jewel);
+            GenerateObject(Entities.Jewel);
         }
         
-        private void GenerateObject(Object obj)
+        private void GenerateObject(Entities obj)
         {
             int randomIndex = Rand.Next(Rooms.Count);
-            Object el = Rooms[randomIndex];
+            Entities el = Rooms[randomIndex];
 
             if (el.HasFlag(obj))
             {
@@ -103,6 +104,11 @@ namespace HooverAgent.Environment
             _observer = observer;
             _observer.OnNext(this);
             return null; //Maybe return an Unsubscriber
+        }
+
+        public bool HandleRequest(Action action)
+        {
+            throw new NotImplementedException();
         }
     }
 }

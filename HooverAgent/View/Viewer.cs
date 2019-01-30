@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using HooverAgent.Environment;
-using Object = HooverAgent.Environment.Object;
 
 namespace HooverAgent.View
 {
@@ -56,15 +55,15 @@ namespace HooverAgent.View
 
         private void RenderLegend()
         {
-            string agent = ObjectStringer.ObjectToString(Object.Agent);
-            string dirt = ObjectStringer.ObjectToString(Object.Dirt);
-            string jewel = ObjectStringer.ObjectToString(Object.Jewel);
-            string all = ObjectStringer.ObjectToString(Object.Dirt | Object.Jewel | Object.Agent);
+            string agent = EntitiesStringer.ObjectToString(Entities.Agent);
+            string dirt = EntitiesStringer.ObjectToString(Entities.Dirt);
+            string jewel = EntitiesStringer.ObjectToString(Entities.Jewel);
+            string all = EntitiesStringer.ObjectToString(Entities.Dirt | Entities.Jewel | Entities.Agent);
             
-            string dirtAgent = ObjectStringer.ObjectToString(Object.Agent | Object.Dirt);
-            string jewelAgent = ObjectStringer.ObjectToString(Object.Agent | Object.Jewel);
-            string dirtJewel = ObjectStringer.ObjectToString(Object.Dirt | Object.Jewel);
-            string empty = ObjectStringer.ObjectToString(Object.Nothing);
+            string dirtAgent = EntitiesStringer.ObjectToString(Entities.Agent | Entities.Dirt);
+            string jewelAgent = EntitiesStringer.ObjectToString(Entities.Agent | Entities.Jewel);
+            string dirtJewel = EntitiesStringer.ObjectToString(Entities.Dirt | Entities.Jewel);
+            string empty = EntitiesStringer.ObjectToString(Entities.Nothing);
             string legend = $"{agent}=agent {dirt}=dirt {jewel}=jewel {all}=all {dirtAgent}=dirt+agent {jewelAgent}=jewel+agent {dirtJewel}=dirt+jewel {empty}=empty";
             Console.WriteLine(legend);
         }
@@ -78,8 +77,8 @@ namespace HooverAgent.View
             {
                 for (int row = 0; row < size; row++)
                 {
-                    Object obj = currentEpoch.Rooms[Convert2dTo1d(col, row)];
-                    string objectString = ObjectStringer.ObjectToString(obj);
+                    Entities obj = currentEpoch.Rooms[Convert2dTo1d(col, row)];
+                    string objectString = EntitiesStringer.ObjectToString(obj);
                     if (row == 0)
                     {
                         Console.Write("| " + objectString + " | ");
