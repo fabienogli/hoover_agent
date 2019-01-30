@@ -1,27 +1,21 @@
 using System;
 using System.Collections.Generic;
-using Action = HooverAgent.Agent.Action;
+using Action = HooverAgent.Environment.Action;
 
 namespace HooverAgent.Environment
 {
      
     public class State
     {
-        public Tuple<List<Entities>, Action> Current { get; }
+        public Tuple<Map, Action> Current { get; }
+        
+        public Action Action => Current.Item2;
 
-        public Action GetAction()
-        {
-            return Current.Item2;
-        }
+        public Map Map => Current.Item1;
 
-        public List<Entities> GetMap()
+        public State(Map entities, Action action)
         {
-            return Current.Item1;
-        }
-
-        public State(List<Entities> entities, Action action)
-        {
-            Current = new Tuple<List<Entities>, Action>(entities, action);
+            Current = new Tuple<Map, Action>(entities, action);
         }
     }
 }

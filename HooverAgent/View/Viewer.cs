@@ -9,7 +9,7 @@ namespace HooverAgent.View
 {
     public class Viewer : IObserver<Mansion>
     {
-        private Queue<Mansion> epochs;
+        private readonly Queue<Mansion> epochs;
         private Mansion currentEpoch;
 
         private bool Running { get; set; }
@@ -31,8 +31,8 @@ namespace HooverAgent.View
                 TimeSpan t = watch.Elapsed;
                 if (t.TotalMilliseconds - n.TotalMilliseconds > 800)
                 {
+                    //Reset timespans
                     n = t;
-                    //Render here
                     Render();
                 }
             }
@@ -56,15 +56,15 @@ namespace HooverAgent.View
 
         private void RenderLegend()
         {
-            string agent = EntitiesStringer.ObjectToString(Entities.Agent);
-            string dirt = EntitiesStringer.ObjectToString(Entities.Dirt);
-            string jewel = EntitiesStringer.ObjectToString(Entities.Jewel);
-            string all = EntitiesStringer.ObjectToString(Entities.Dirt | Entities.Jewel | Entities.Agent);
+            string agent = EntityStringer.ObjectToString(Entity.Agent);
+            string dirt = EntityStringer.ObjectToString(Entity.Dirt);
+            string jewel = EntityStringer.ObjectToString(Entity.Jewel);
+            string all = EntityStringer.ObjectToString(Entity.Dirt | Entity.Jewel | Entity.Agent);
             
-            string dirtAgent = EntitiesStringer.ObjectToString(Entities.Agent | Entities.Dirt);
-            string jewelAgent = EntitiesStringer.ObjectToString(Entities.Agent | Entities.Jewel);
-            string dirtJewel = EntitiesStringer.ObjectToString(Entities.Dirt | Entities.Jewel);
-            string empty = EntitiesStringer.ObjectToString(Entities.Nothing);
+            string dirtAgent = EntityStringer.ObjectToString(Entity.Agent | Entity.Dirt);
+            string jewelAgent = EntityStringer.ObjectToString(Entity.Agent | Entity.Jewel);
+            string dirtJewel = EntityStringer.ObjectToString(Entity.Dirt | Entity.Jewel);
+            string empty = EntityStringer.ObjectToString(Entity.Nothing);
             string legend = $"{agent}=agent {dirt}=dirt {jewel}=jewel {all}=all {dirtAgent}=dirt+agent {jewelAgent}=jewel+agent {dirtJewel}=dirt+jewel {empty}=empty";
             Console.WriteLine(legend);
         }
@@ -72,19 +72,15 @@ namespace HooverAgent.View
         private void RenderMap()
         {
             //Assuming the map is squared
-            int size = (int) Math.Sqrt(currentEpoch.Rooms.Count);
+            int size = (int) Math.Sqrt(currentEpoch.Map.Size);
             StringBuilder sb = new StringBuilder();
             for (int col = 0; col < size; col++)
             {
-                for (int row = 0; row < size; row++)
+                sb.Append("| ");
+                for (int row = 1; row < size; row++)
                 {
-                    Entities obj = currentEpoch.Rooms[Convert2dTo1d(col, row)];
-                    string objectString = EntitiesStringer.ObjectToString(obj);
-                    if (row == 0)
-                    {
-                        sb.Append("| ");
-                    }
-
+                    Entity obj = currentEpoch.Map.GetEntityAt(Convert2DTo1D(col, row));
+                    string objectString = EntityStringer.ObjectToString(obj);
                     sb.Append(objectString)
                       .Append(" | ");
                 }
@@ -95,9 +91,10 @@ namespace HooverAgent.View
         }
 
 
-        public int Convert2dTo1d(int col, int row)
+        private int Convert2DTo1D(int col, int row)
         {
-            int rowLength = (int) Math.Sqrt(currentEpoch.Rooms.Count);
+            var rowLength = currentEpoch.Map.SquaredSize;
+            
             return row * rowLength + col;
         }
 

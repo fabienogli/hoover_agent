@@ -1,19 +1,21 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using HooverAgent.Environment;
 using HooverAgent.Search;
+using Action = HooverAgent.Environment.Action;
 
 namespace HooverAgent.Agent
 {
     public class MyAgent
     {
-        private RoomSensor RoomSensor;
-        private Effector Effector;
-        private readonly Mansion Environment;
-        private List<Entities> Beliefs;
-        private Queue<Action> Intents;
+        private RoomSensor RoomSensor { get; }
+        private Effector Effector { get; }
+
+        private Mansion Environment { get; }
+
+        private Map Beliefs { get; set; }
+        private Queue<Action> Intents { get; }
 
 
         public MyAgent(Mansion environment)
@@ -39,17 +41,18 @@ namespace HooverAgent.Agent
                 if (Intents.Any())
                 {
                     Action intent = Intents.Dequeue();
-                    Effector.Dewit(intent, Environment);
+                    Effector.DoIt(intent, Environment);
                 }
                 else
                 {
                     PlanIntents(Beliefs);
                 }
+
                 Thread.Sleep(50);
             }
         }
 
-        private void PlanIntents(List<Entities> actual)
+        private void PlanIntents(Map actual)
         {
             var state = new State(actual, Action.Idle);
             var tree = new Tree(new Tree.Node(state));
@@ -74,7 +77,6 @@ namespace HooverAgent.Agent
         {
             if (node.Parent == null)
             {
-                //EnqueueIntentFromNode(node);
                 return;
             }
 
@@ -84,14 +86,14 @@ namespace HooverAgent.Agent
 
         private void EnqueueIntentFromNode(Tree.Node node)
         {
-            var intent = node.State.GetAction();
+            var intent = node.State.Action;
             Intents.Enqueue(intent);
         }
 
         private bool IsGoalNode(Tree.Node node)
         {
             //todo implement goal nodes !
-            return node.State.GetMap()[0].HasFlag(Entities.Agent);
+            return node.State.Map.ContainsEntityAtPos(Entity.Agent, 0);
             //return false;
         }
 

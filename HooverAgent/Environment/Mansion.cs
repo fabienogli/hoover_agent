@@ -1,62 +1,67 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Threading;
-using Action = HooverAgent.Agent.Action;
 
 namespace HooverAgent.Environment
 {
     public class Mansion : IObservable<Mansion>
     {
-        private Random _rand;
-        private IObserver<Mansion> _observer;
+        private IObserver<Mansion> Observer { get; set; }
+        private bool Running { get; }
+        private Random Rand { get; }
+        //public List<Entity> Rooms { get; }
+        public Map Map { get; set; }
         private int AgentPos { get; set; }
 
         public Mansion(int size)
         {
+            //Initializing Random once to get uniform result, and seeding to control randomness (same sequence at each run)
             Rand = new Random(1);
-            Rooms = new List<Entities>(size);
-            for (var i = 0; i < size; i++)
-            {
-                Rooms.Add(Entities.Nothing);
-                //Generate jewels and dirt on first run 
-            }
-
+            //Rooms = new List<Entity>(size);
             Running = true;
-            AgentPos = Rand.Next(size);
-            Rooms[AgentPos] |= Entities.Agent;
-            //Initializing Random once to get uniform result, and seeding to control randomness
-
+            Map = new Map(size);
+            InitAgent();
         }
-
+        
         public Mansion(Mansion other)
         {
-            Rooms = other.CopyRooms();
-            //Copy agent state (pos) 
+            Map = new Map(other.Map);
+            AgentPos = other.AgentPos;
             //Copy performance 
         }
 
-        public List<Entities> CopyRooms()
+        private void InitAgent()
         {
-            List<Entities> copy = new List<Entities>(Rooms.Count);
+            AgentPos = Rand.Next(Map.Size);
+            Map.AddEntityAtPos(Entity.Agent, AgentPos);
+        }
+
+        public IDisposable Subscribe(IObserver<Mansion> observer)
+        {
+            Observer = observer;
+            Notify();
+            return null; //Maybe return an Unsubscriber
+        }
+
+        private void Notify()
+        {
+            Observer.OnNext(this);
+        }
+
+       /* public List<Entity> CopyRooms()
+        {
+            List<Entity> copy = new List<Entity>(Rooms.Count);
             foreach (var room in Rooms)
             {
                 copy.Add(room);
             }
 
             return copy;
-        } 
-
-        private bool Running { get; }
-
-        private Random Rand { get; }
-
-        public List<Entities> Rooms { get; }
+        }*/
 
         public void Run()
         {
-            
             while (Running)
             {
                 if (ShouldGenerateDirt())
@@ -68,6 +73,7 @@ namespace HooverAgent.Environment
                 {
                     GenerateJewel();
                 }
+
                 Thread.Sleep(10);
             }
         }
@@ -86,77 +92,61 @@ namespace HooverAgent.Environment
             //If some proba
             return Rand.Next(100) < 5;
         }
-        
+
         private void GenerateDirt()
         {
-            GenerateObject(Entities.Dirt);
+            GenerateEntity(Entity.Dirt);
         }
-        
+
         private void GenerateJewel()
         {
-            GenerateObject(Entities.Jewel);
+            GenerateEntity(Entity.Jewel);
         }
-        
-        private void GenerateObject(Entities obj)
-        {
-            int randomIndex = Rand.Next(Rooms.Count);
-            Entities el = Rooms[randomIndex];
 
-            if (el.HasFlag(obj))
+        private void GenerateEntity(Entity entity)
+        {
+            var randomIndex = Rand.Next(Map.Size);
+
+            if (Map.ContainsEntityAtPos(entity, randomIndex))
             {
                 //Already set so no need to reset it
                 return;
             }
 
-            Rooms[randomIndex] |= obj;
-            _observer.OnNext(this);
-        }
-        public IDisposable Subscribe(IObserver<Mansion> observer)
-        {
-            _observer = observer;
-            _observer.OnNext(this);
-            return null; //Maybe return an Unsubscriber
+            Map.AddEntityAtPos(entity, randomIndex);
+            Notify();
         }
 
         public bool HandleRequest(Action action)
         {
-            
-            State state = new State(Rooms, Action.Idle);
-            State next = GetNextStateForAction(state, AgentPos, action);
-            int size = (int) Math.Sqrt(Rooms.Count);
             int newPos = AgentPos;
-            
-            //Here we assume the movement is legal and will work (no out of bounds treated)
-            //todo maybe change this assumption...
+
+            //Here we know the movement is legal and will work
+            //The movement is bound to be legal because it come from the exploration, and the exploration asks
+            //the environnement which actions/state are available (legal)
             switch (action)
             {
                 case Action.Up:
-                    newPos -= size;
+                    newPos -= Map.SquaredSize;
                     break;
                 case Action.Down:
-                    newPos += size;
+                    newPos += Map.SquaredSize;
                     break;
-                    //Move down
+                //Move down
                 case Action.Left:
                     newPos--;
                     break;
-                    //Move left
+                //Move left
                 case Action.Right:
                     newPos++;
                     break;
-                default:
-                    break;
             }
 
-            
-            //todo Maybe lock grid here
-            Rooms[AgentPos] &= ~Entities.Agent;
-            Rooms[newPos] |= Entities.Agent;
+            Map.MoveAgent(AgentPos, newPos);
             AgentPos = newPos;
-            _observer.OnNext(this);
-            
+            Notify();
+
             return true;
-            
         }
 
         public static List<State> GetSuccessors(State currentState) //@TODO
@@ -164,9 +154,9 @@ namespace HooverAgent.Environment
             // o(n+m), n = size of mansion, m = number of actions implementation
             //todo store agentPos in state for o(m) ~= o(1)
             int agentPos = 0;
-            for (int i = 0; i < currentState.GetMap().Count; i++)
+            for (int i = 0; i < currentState.Map.Size; i++)
             {
-                if (currentState.GetMap()[i].HasFlag(Entities.Agent))
+                if (currentState.Map.ContainsEntityAtPos(Entity.Agent, i))
                 {
                     agentPos = i;
                     break;
@@ -181,7 +171,7 @@ namespace HooverAgent.Environment
 
             return successors;
         }
-
+        
         private static void AddStateForActionIfValid(List<State> successors, State current, int agentPos, Action action)
         {
             try
@@ -189,7 +179,7 @@ namespace HooverAgent.Environment
                 State state = GetNextStateForAction(current, agentPos, action);
                 successors.Add(state);
             }
-            catch (IndexOutOfRangeException e)
+            catch (IndexOutOfRangeException)
             {
                 //Do nothing
             }
@@ -198,15 +188,14 @@ namespace HooverAgent.Environment
         private static State GetNextStateForAction(State current, int agentPos, Action action)
         {
             int newPos = agentPos;
-            int nTiles = current.GetMap().Count;
-            int size = (int) Math.Sqrt(nTiles);
+            
             switch (action)
             {
                 case Action.Up:
-                    newPos -= size;
+                    newPos -= current.Map.SquaredSize;
                     break;
                 case Action.Down:
-                    newPos += size;
+                    newPos += current.Map.SquaredSize;
                     break;
                 //Move down
                 case Action.Left:
@@ -220,21 +209,14 @@ namespace HooverAgent.Environment
                     throw new InvalidDataException();
             }
 
-            if (newPos < 0 || newPos >= nTiles)
+            if (newPos < 0 || newPos >= current.Map.Size)
             {
                 throw new IndexOutOfRangeException();
             }
-            
-            List<Entities> copy = new List<Entities>(nTiles);
-            foreach (var entity in current.GetMap())
-            {
-                copy.Add(entity);
-            }
 
-            copy[agentPos] &= ~Entities.Agent;
-            copy[newPos] |= Entities.Agent;
-            
-            State state = new State(copy, action);
+            Map map = new Map(current.Map);
+            map.MoveAgent(agentPos, newPos);
+            State state = new State(map, action);
             return state;
         }
 
@@ -244,5 +226,3 @@ namespace HooverAgent.Environment
         }
     }
 }
-
-

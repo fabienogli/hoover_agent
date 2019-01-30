@@ -3,11 +3,11 @@ using HooverAgent.Environment;
 
 namespace HooverAgent.Agent
 {
-    public class RoomSensor : Sensor<List<Entities>>
+    public class RoomSensor : Sensor<Map>
     {
-        public List<Entities> observe(Mansion env)
+        public Map observe(Mansion env)
         {
-            return env.CopyRooms();
+            return new Map(env.Map);
         }
     }
 }

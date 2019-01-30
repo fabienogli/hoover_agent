@@ -10,28 +10,26 @@ namespace HooverAgent.Search
         {
             private List<Node> Children { get; } 
             public Node Parent { get; }
-            public State State { get; set; }
+            public State State { get; }
             
             public int Depth { get; }
             
-            public int Cost { get;  }
-
-            public Node(Node parent, State state)
-            {
-                Parent = parent;
-                Children = new List<Node>();
-                Depth = parent.Depth + 1;
-                State = state;
-                Cost = Mansion.GetCostForAction(state.GetAction());
-            }
+            public int Cost { get; }
 
             public Node(State state)
             {
                 Depth = 0;
                 State = state;
-                Cost = Mansion.GetCostForAction(state.GetAction());
+                Cost = Mansion.GetCostForAction(state.Action);
                 Children = new List<Node>();
             }
+
+            public Node(Node parent, State state) : this(state)
+            {
+                Parent = parent;
+                Depth = parent.Depth + 1;
+            }
+           
             public void AddChild(Node child)
             {
                 Children.Add(child);

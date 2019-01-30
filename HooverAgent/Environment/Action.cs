@@ -1,4 +1,4 @@
-namespace HooverAgent.Agent
+namespace HooverAgent.Environment
 {
     public enum Action
     {

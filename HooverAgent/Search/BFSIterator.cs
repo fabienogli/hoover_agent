@@ -7,9 +7,9 @@ namespace HooverAgent.Search
 {
     public class BFSIterator : Iterator<Tree.Node>
     {
-        private Queue<Tree.Node> Frontier;
-
         private Tree.Node Current { get; set; }
+        private Queue<Tree.Node> Frontier { get;  }
+       
         public BFSIterator(Tree tree)
         {
             Frontier = new Queue<Tree.Node>();
