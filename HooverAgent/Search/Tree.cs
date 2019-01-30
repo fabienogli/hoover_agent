@@ -8,41 +8,41 @@ namespace HooverAgent.Search
     {
         public class Node
         {
-            private List<Node> _children;
-            private State _state;
-            private Action _action;
+            private List<Node> Children { get; } 
+            public Node Parent { get; }
+            public State State { get; set; }
+            
+            public int Depth { get; }
+            
+            public int Cost { get;  }
 
-            public Node(Node parent)
+            public Node(Node parent, State state)
             {
                 Parent = parent;
-                _children = new List<Node>();
+                Children = new List<Node>();
+                Depth = parent.Depth + 1;
+                State = state;
+                Cost = Mansion.GetCostForAction(state.GetAction());
             }
-            
+
+            public Node(State state)
+            {
+                Depth = 0;
+                State = state;
+                Cost = Mansion.GetCostForAction(state.GetAction());
+                Children = new List<Node>();
+            }
             public void AddChild(Node child)
             {
-                _children.Add(child);
+                Children.Add(child);
             }
-            
-            public Action Action
-            {
-                get => _action;
-                set => _action = value;
-            }
-
-            public Node Parent { get; }
-            
-            public State State { get; }
-            
-            
         }
 
-        private Node Root;
-        private Mansion Environment;
+        public Node Root { get; }
 
-        public Tree(Node root, Mansion environment)
+        public Tree(Node root)
         {
             Root = root;
-            Environment = environment;
         }
             
     }

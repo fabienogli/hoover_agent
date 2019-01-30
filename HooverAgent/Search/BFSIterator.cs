@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HooverAgent.Environment;
@@ -7,8 +8,14 @@ namespace HooverAgent.Search
     public class BFSIterator : Iterator<Tree.Node>
     {
         private Queue<Tree.Node> Frontier;
-        private Mansion Environment; //@TODO static method to get env
-        
+
+        private Tree.Node Current { get; set; }
+        public BFSIterator(Tree tree)
+        {
+            Frontier = new Queue<Tree.Node>();
+            Frontier.Enqueue(tree.Root);
+        }
+
         public bool HasNext()
         {
             return Frontier.Any();
@@ -16,14 +23,29 @@ namespace HooverAgent.Search
 
         public Tree.Node GetNext()
         {
-            Tree.Node current = Frontier.Dequeue();
-            CreateNodes(Environment.GetNextFromState(current.State)).ForEach(node => Frontier.Enqueue(node));
-            return current;
+            if (!HasNext())
+            {
+                throw new InvalidOperationException("No element in queue");
+            }
+
+            Current = Frontier.Dequeue();
+            return Current;
+
         }
 
-        private List<Tree.Node> CreateNodes(List<State> getNextFromState)
+        public void Expand()
         {
-            throw new System.NotImplementedException();
+            CreateAndEnqueueNodes(Current, Mansion.GetSuccessors(Current.State));
+        }
+
+        private void CreateAndEnqueueNodes(Tree.Node parent, List<State> nextPossibleStates)
+        {
+            nextPossibleStates.ForEach(state =>
+            {
+                var node = new Tree.Node(parent, state);
+                parent.AddChild(node);
+                Frontier.Enqueue(node);
+            });
         }
     }
 }
