@@ -110,6 +110,11 @@ namespace HooverAgent.Environment
         {
             throw new NotImplementedException();
         }
+
+        public List<State> GetNextFromState(State currentState) //@TODO
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

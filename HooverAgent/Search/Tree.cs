@@ -8,19 +8,19 @@ namespace HooverAgent.Search
     {
         public class Node
         {
-            private List<Node> Children;
-            private State State;
+            private List<Node> _children;
+            private State _state;
             private Action _action;
 
             public Node(Node parent)
             {
                 Parent = parent;
-                Children = new List<Node>();
+                _children = new List<Node>();
             }
             
             public void AddChild(Node child)
             {
-                Children.Add(child);
+                _children.Add(child);
             }
             
             public Action Action
@@ -30,6 +30,9 @@ namespace HooverAgent.Search
             }
 
             public Node Parent { get; }
+            
+            public State State { get; }
+            
             
         }
 
