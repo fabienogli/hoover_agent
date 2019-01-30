@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using HooverAgent.Environment;
 
@@ -72,7 +73,7 @@ namespace HooverAgent.View
         {
             //Assuming the map is squared
             int size = (int) Math.Sqrt(currentEpoch.Rooms.Count);
-
+            StringBuilder sb = new StringBuilder();
             for (int col = 0; col < size; col++)
             {
                 for (int row = 0; row < size; row++)
@@ -81,16 +82,16 @@ namespace HooverAgent.View
                     string objectString = EntitiesStringer.ObjectToString(obj);
                     if (row == 0)
                     {
-                        Console.Write("| " + objectString + " | ");
+                        sb.Append("| ");
                     }
-                    else
-                    {
-                        Console.Write(objectString + " | ");
-                    }
+
+                    sb.Append(objectString)
+                      .Append(" | ");
                 }
 
-                Console.WriteLine();
+                sb.Append(System.Environment.NewLine);
             }
+            Console.Write(sb.ToString());
         }
 
 
