@@ -10,7 +10,7 @@ namespace HooverAgent.Agent
 {
     public class MyAgent
     {
-        private const int MaxDepth = 9;
+        private const int MaxDepth = 5;
         private RoomSensor RoomSensor { get; }
         private PerformanceSensor PerformanceSensor { get; }
         private Effector Effector { get; }
@@ -77,6 +77,10 @@ namespace HooverAgent.Agent
             }
 
             BacktrackAndBuildIntents(node);
+            foreach (var intent in Intents)
+            {
+                Console.Write(intent + " ");
+            }
         }
 
         private void BacktrackAndBuildIntents(Tree.Node node)
@@ -99,8 +103,8 @@ namespace HooverAgent.Agent
         private bool IsGoalNode(Tree.Node node)
         {
             //todo implement goal nodes !
-            return node.State.Map.ContainsEntityAtPos(Entity.Agent, 0);
-            //return false;
+           // return node.State.Map.ContainsEntityAtPos(Entity.Agent, 0);
+            return false;
         }
 
         bool IsGoalReached()

@@ -168,10 +168,9 @@ namespace HooverAgent.Environment
             var values = Enum.GetValues(typeof(Action));
             foreach (Action action in values)
             {
-                //todo tmp, just because I don't want to deal with this for testing purposes
-                if(action == Action.Pick || action == Action.Snort) 
-                    continue;
                 
+                if(action == Action.Idle)
+                    continue;
                 
                 AddStateForActionIfValid(successors, currentState, action);
             }
