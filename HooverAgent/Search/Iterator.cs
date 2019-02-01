@@ -4,5 +4,6 @@ namespace HooverAgent.Search
     {
         bool HasNext();
         T GetNext();
+        void Expand();
     }
 }
