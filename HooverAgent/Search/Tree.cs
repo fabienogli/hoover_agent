@@ -27,6 +27,7 @@ namespace HooverAgent.Search
             public Node(Node parent, State state) : this(state)
             {
                 Parent = parent;
+                Cost = parent.Cost + Mansion.GetCostForAction(state.Action);
                 Depth = parent.Depth + 1;
             }
            
