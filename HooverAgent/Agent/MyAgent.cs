@@ -11,18 +11,21 @@ namespace HooverAgent.Agent
     public class MyAgent
     {
         private RoomSensor RoomSensor { get; }
+        private PerformanceSensor PerformanceSensor { get; }
         private Effector Effector { get; }
 
         private Mansion Environment { get; }
 
         private Map Beliefs { get; set; }
-        private Queue<Action> Intents { get; }
 
+        private int Performance { get; set; }
+        private Queue<Action> Intents { get; }
 
         public MyAgent(Mansion environment)
         {
             Environment = environment;
             RoomSensor = new RoomSensor();
+            PerformanceSensor = new PerformanceSensor();
             Effector = new Effector();
             Intents = new Queue<Action>();
         }
@@ -32,6 +35,7 @@ namespace HooverAgent.Agent
             while (true)
             {
                 Beliefs = RoomSensor.observe(Environment);
+                Performance = PerformanceSensor.observe(Environment);
                 //@TODO know either we stock all the past or not
 
                 if (IsGoalReached())
