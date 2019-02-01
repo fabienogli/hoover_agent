@@ -10,6 +10,7 @@ namespace HooverAgent.Agent
 {
     public class MyAgent
     {
+        private const int MaxDepth = 9;
         private RoomSensor RoomSensor { get; }
         private PerformanceSensor PerformanceSensor { get; }
         private Effector Effector { get; }
@@ -67,7 +68,7 @@ namespace HooverAgent.Agent
             {
                 node = strategy.GetNext();
 
-                if (IsGoalNode(node))
+                if (IsGoalNode(node) || node.Depth == MaxDepth)
                 {
                     break;
                 }

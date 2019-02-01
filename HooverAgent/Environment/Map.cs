@@ -13,7 +13,7 @@ namespace HooverAgent.Environment
         public int SquaredSize => (int) Math.Sqrt(Size);
         
         //Storing AgentPos to avoid computation
-        public int AgentPos { private get; set; }
+        public int AgentPos { get; set; }
 
         private object _lock = new object();  
         public Map(int size)

@@ -9,9 +9,11 @@ namespace HooverAgent.Environment
         private IObserver<Mansion> Observer { get; set; }
         private bool Running { get; }
         private Random Rand { get; }
-        //public List<Entity> Rooms { get; }
-        public Map Map { get; set; }
-       // private int AgentPos { get; set; }
+        public Map Map { get; }
+
+        private int _fitness;
+        
+        public int Fitness => _fitness;
 
         public Mansion(int size)
         {
@@ -21,6 +23,7 @@ namespace HooverAgent.Environment
             Running = true;
             Map = new Map(size);
             InitAgent();
+            
         }
         
         public Mansion(Mansion other)
@@ -34,6 +37,7 @@ namespace HooverAgent.Environment
             var agentPos = Rand.Next(Map.Size);
             Map.AddEntityAtPos(Entity.Agent, agentPos);
             Map.AgentPos = agentPos;
+            _fitness = 0;
         }
 
         public IDisposable Subscribe(IObserver<Mansion> observer)
@@ -47,17 +51,6 @@ namespace HooverAgent.Environment
         {
             Observer.OnNext(this);
         }
-
-       /* public List<Entity> CopyRooms()
-        {
-            List<Entity> copy = new List<Entity>(Rooms.Count);
-            foreach (var room in Rooms)
-            {
-                copy.Add(room);
-            }
-
-            return copy;
-        }*/
 
         public void Run()
         {
@@ -114,9 +107,56 @@ namespace HooverAgent.Environment
 
         public bool HandleRequest(Action action)
         {
+            UpdateFitness(action);
             Map.ApplyAction(action);
             Notify();
             return true;
+        }
+
+        private void UpdateFitness(Action action)
+        {
+            switch (action)
+            {
+                case Action.Up: 
+                    //fallthrough
+                case Action.Down:
+                    //fallthrough
+                case Action.Left:
+                    //fallthough
+                case Action.Right:
+                    _fitness += (int) Performances.Move;
+                    break;
+                
+                case Action.Snort:
+                    if (Map.ContainsEntityAtPos(Entity.Jewel, Map.AgentPos))
+                    {
+                        _fitness += (int) Performances.SnortJewel;
+                    }
+
+                    if (Map.ContainsEntityAtPos(Entity.Dirt, Map.AgentPos))
+                    {
+                        _fitness += (int) Performances.SnortDirt;
+                    }
+
+                    if (Map.GetEntityAt(Map.AgentPos) == Entity.Nothing)
+                    {
+                        _fitness += (int) Performances.PickNothing;
+                    } 
+                    break;
+                case Action.Pick:
+                    if (Map.ContainsEntityAtPos(Entity.Jewel, Map.AgentPos))
+                    {
+                        _fitness += (int) Performances.PickJewel;
+                    }
+
+                    if (Map.ContainsEntityAtPos(Entity.Dirt, Map.AgentPos) 
+                       || Map.GetEntityAt(Map.AgentPos) == Entity.Nothing )
+                    {
+                        _fitness += (int) Performances.PickNothing;
+                    }
+                    
+                    break;
+            }
         }
 
         public static List<State> GetSuccessors(State currentState) //@TODO
