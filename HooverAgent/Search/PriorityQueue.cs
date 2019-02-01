@@ -9,8 +9,18 @@ namespace HooverAgent.Search
         
         private int Count => Queue.Count;
 
+        public PriorityQueue()
+        {
+            Queue = new List<Tuple<T, int>>();
+        }
         public void Enqueue(T value, int priority)
         {
+            if (!Any())
+            {
+               Queue.Add(new Tuple<T, int>(value, priority));
+               return;
+            }
+              
             for (var i = 0; i < Queue.Count; i++)
             {
                 if (priority < Queue[i].Item2)

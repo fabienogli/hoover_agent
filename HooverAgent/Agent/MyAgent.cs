@@ -62,7 +62,7 @@ namespace HooverAgent.Agent
         {
             var state = new State(actual, Action.Idle);
             var tree = new Tree(new Tree.Node(state));
-            var strategy = new BFSIterator(tree);
+            var strategy = new AStarIterator(tree);
             Tree.Node node = null;
             while (strategy.HasNext())
             {
