@@ -53,7 +53,10 @@ namespace HooverAgent.Environment
         {
             lock (_lock)
             {
-                Rooms[pos] &= ~flag;    
+                if (ContainsEntityAtPos(flag,pos))
+                {
+                    Rooms[pos] &= ~flag;                    
+                }
             }
         }
 
@@ -99,6 +102,12 @@ namespace HooverAgent.Environment
                 case Action.Right:
                     newPos++;
                     break;
+                case Action.Snort:
+                    Rooms[newPos] = Entity.Nothing;
+                    return;
+                case Action.Pick:
+                    RemoveEntityAtPos(Entity.Jewel, newPos);
+                    return;
                 default:
                     throw new InvalidDataException("No such action was implemented !");
             }
