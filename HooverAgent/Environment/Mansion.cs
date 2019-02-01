@@ -203,5 +203,24 @@ namespace HooverAgent.Environment
         {
             return 1;
         }
+
+        public static int GetHeuristicForState(State state)
+        {
+            int dirtCounter = 0;
+            int jewelCounter = 0;
+            //@TODO change that 
+            for(int i = 0; i < state.Map.Size; i++)
+            {
+                if (state.Map.ContainsEntityAtPos(Entity.Dirt, i))
+                {
+                    dirtCounter++;
+                }
+                if (state.Map.ContainsEntityAtPos(Entity.Jewel, i))
+                {
+                    jewelCounter++;
+                } 
+            }
+            return dirtCounter + jewelCounter;
+        }
     }
 }
