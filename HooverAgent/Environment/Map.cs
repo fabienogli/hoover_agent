@@ -25,12 +25,16 @@ namespace HooverAgent.Environment
         public Map(Map other)
         {
             Rooms = new List<Entity>(other.Size);
-            foreach (var room in other.Rooms)
+            lock (other._lock)
             {
-                Rooms.Add(room);
-            }
+                foreach (var room in other.Rooms)
+                {
+                    Rooms.Add(room);
+                }
 
-            AgentPos = other.AgentPos;
+                AgentPos = other.AgentPos;
+            }
+           
         }
 
         private void Init()
@@ -97,9 +101,19 @@ namespace HooverAgent.Environment
                     newPos += SquaredSize;
                     break;
                 case Action.Left:
+                    if (newPos % SquaredSize == 0)
+                    {
+                        throw new IndexOutOfRangeException();
+                    }
                     newPos--;
+                    
                     break;
                 case Action.Right:
+                    
+                    if (newPos % SquaredSize == SquaredSize-1)
+                    {
+                        throw new IndexOutOfRangeException();
+                    }
                     newPos++;
                     break;
                 case Action.Snort:
@@ -116,6 +130,8 @@ namespace HooverAgent.Environment
             {
                 throw new IndexOutOfRangeException();
             }
+
+            
 
             MoveAgentTo(newPos);
             AgentPos = newPos;

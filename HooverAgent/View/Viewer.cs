@@ -44,6 +44,12 @@ namespace HooverAgent.View
             GetNextEpoch();
             RenderLegend();
             RenderMap();
+            RenderPerf();
+        }
+
+        private void RenderPerf()
+        {
+            Console.WriteLine("Fitness : " + currentEpoch.Fitness);
         }
 
         private void GetNextEpoch()
