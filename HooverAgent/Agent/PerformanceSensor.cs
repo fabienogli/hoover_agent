@@ -6,7 +6,7 @@ namespace HooverAgent.Agent
     {
         public int observe(Mansion env)
         {
-            throw new System.NotImplementedException();
+            return env.Fitness;
         }
     }
 }
