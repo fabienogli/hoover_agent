@@ -15,6 +15,9 @@ namespace HooverAgent.Environment
         
         public int Fitness => _fitness;
 
+        private const double MaxDirtCoverage = 0.25;
+        private const double MaxJewelCoverage = 0.25;
+
         public Mansion(int size)
         {
             //Initializing Random once to get uniform result, and seeding to control randomness (same sequence at each run)
@@ -25,11 +28,11 @@ namespace HooverAgent.Environment
             InitAgent();
             
         }
-        
+
         public Mansion(Mansion other)
         {
             Map = new Map(other.Map);
-            //Copy performance 
+            _fitness = other._fitness;
         }
 
         private void InitAgent()
