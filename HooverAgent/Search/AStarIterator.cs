@@ -7,7 +7,7 @@ namespace HooverAgent.Search
     public class AStarIterator : Iterator<Tree.Node>
     {
         private Tree.Node Current { get; set; }
-        private PriorityQueue<Tree.Node> Frontier { get; set; }
+        private PriorityQueue<Tree.Node> Frontier { get; }
 
         public AStarIterator(Tree tree)
         {
@@ -47,6 +47,8 @@ namespace HooverAgent.Search
                 int g = node.Cost;
                 Frontier.Enqueue(node, g + h);
             });
+           
+           
         }
     }
 }
