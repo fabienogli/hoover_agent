@@ -15,10 +15,15 @@ namespace HooverAgent.Environment
         //Storing AgentPos to avoid computation
         public int AgentPos { get; set; }
 
+        public int DirtCounter { get; private set;  }
+        public int JewelCounter { get; private set;  }
+
         private object _lock = new object();  
         public Map(int size)
         {
             Rooms = new List<Entity>(size);
+            DirtCounter = 0;
+            JewelCounter = 0;
             Init();
         }
 
@@ -33,15 +38,24 @@ namespace HooverAgent.Environment
                 }
 
                 AgentPos = other.AgentPos;
+                DirtCounter = other.DirtCounter;
+                JewelCounter = other.JewelCounter;
             }
            
         }
 
         private void Init()
         {
+            Random rand = new Random(2);
             for (var i = 0; i < Rooms.Capacity; i++)
             {
                 Rooms.Add(Entity.Nothing);
+                if (rand.Next(100) < 30)
+                {
+                    AddEntityAtPos(Entity.Dirt, i);
+                    DirtCounter++;
+                }
+                
             }
         }
 
@@ -49,8 +63,19 @@ namespace HooverAgent.Environment
         {
             lock (_lock)
             {
-                Rooms[pos] |= flag;    
+                Rooms[pos] |= flag; 
             }
+
+            switch (flag)
+            {
+                case Entity.Dirt:
+                    DirtCounter++;
+                    break;
+                case Entity.Jewel:
+                    JewelCounter++;
+                    break;
+            }
+            
         }
 
         public void RemoveEntityAtPos(Entity flag, int pos)
@@ -59,7 +84,16 @@ namespace HooverAgent.Environment
             {
                 if (ContainsEntityAtPos(flag,pos))
                 {
-                    Rooms[pos] &= ~flag;                    
+                    Rooms[pos] &= ~flag;
+                    switch (flag)
+                    {
+                        case Entity.Dirt:
+                            DirtCounter--;
+                            break;
+                        case Entity.Jewel:
+                            JewelCounter--;
+                            break;
+                    }
                 }
             }
         }
@@ -117,7 +151,8 @@ namespace HooverAgent.Environment
                     newPos++;
                     break;
                 case Action.Snort:
-                    Rooms[newPos] = Entity.Nothing;
+                    RemoveEntityAtPos(Entity.Dirt, newPos);
+                    RemoveEntityAtPos(Entity.Jewel, newPos);
                     return;
                 case Action.Pick:
                     RemoveEntityAtPos(Entity.Jewel, newPos);
@@ -130,8 +165,6 @@ namespace HooverAgent.Environment
             {
                 throw new IndexOutOfRangeException();
             }
-
-            
 
             MoveAgentTo(newPos);
             AgentPos = newPos;

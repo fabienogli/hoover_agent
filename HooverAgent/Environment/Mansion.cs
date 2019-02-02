@@ -75,12 +75,21 @@ namespace HooverAgent.Environment
 
         private bool ShouldGenerateDirt()
         {
-            return Rand.Next(100) < 5;
+           
+            if ((double) Map.JewelCounter / 100 < MaxDirtCoverage)
+            {
+                return Rand.Next(100) < 5;     
+            }
+
+            return false;
         }
 
         private bool ShouldGenerateJewel()
         {
-            //If some proba
+            if ((double) Map.JewelCounter / 100 < MaxJewelCoverage)
+            {
+                return Rand.Next(100) < 5;     
+            }
             return Rand.Next(100) < 5;
         }
 
@@ -162,7 +171,7 @@ namespace HooverAgent.Environment
             }
         }
 
-        public static List<State> GetSuccessors(State currentState) //@TODO
+        public static List<State> GetSuccessors(State currentState) 
         {
             var successors = new List<State>();
             var values = Enum.GetValues(typeof(Action));
@@ -174,7 +183,7 @@ namespace HooverAgent.Environment
                 
                 AddStateForActionIfValid(successors, currentState, action);
             }
-            
+
             return successors;
         }
         
