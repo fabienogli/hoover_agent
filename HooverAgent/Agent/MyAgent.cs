@@ -54,7 +54,7 @@ namespace HooverAgent.Agent
                     PlanIntents(Beliefs);
                 }
 
-                Thread.Sleep(50);
+                Thread.Sleep(200);
             }
         }
 
@@ -77,6 +77,7 @@ namespace HooverAgent.Agent
             }
 
             BacktrackAndBuildIntents(node);
+            
         }
 
         private void BacktrackAndBuildIntents(Tree.Node node)
