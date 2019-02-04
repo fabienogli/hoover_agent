@@ -43,7 +43,7 @@ namespace HooverAgent.Search
             {
                 var node = new Tree.Node(parent, state);
                 parent.AddChild(node);
-                int h = Mansion.GetHeuristicForState(state);
+                double h = Mansion.GetHeuristicForState(state);
                 int g = node.Cost;
                 Frontier.Enqueue(node, g + h);
             });

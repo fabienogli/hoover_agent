@@ -5,25 +5,25 @@ namespace HooverAgent.Search
 {
     public class PriorityQueue<T>
     {
-        private List<Tuple<T, int>> Queue;
+        private List<Tuple<T, double>> Queue;
         
         public int Count => Queue.Count;
 
         public PriorityQueue()
         {
-            Queue = new List<Tuple<T, int>>();
+            Queue = new List<Tuple<T, double>>();
         }
-        public void Enqueue(T value, int priority)
+        public void Enqueue(T value, double priority)
         {
             for (var i = 0; i < Queue.Count; i++)
             {
                 if (priority < Queue[i].Item2)
                 {
-                    Queue.Insert(i, new Tuple<T, int>(value, priority));
+                    Queue.Insert(i, new Tuple<T, double>(value, priority));
                     return;
                 }
             }
-            Queue.Add(new Tuple<T, int>(value, priority));
+            Queue.Add(new Tuple<T, double>(value, priority));
          }
 
         public T Dequeue()
