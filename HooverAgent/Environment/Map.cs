@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace HooverAgent.Environment
 {
@@ -15,18 +16,18 @@ namespace HooverAgent.Environment
         //Storing AgentPos to avoid computation
         public int AgentPos { get; set; }
 
-        public int TotalDirtCounter { get; private set;  }
-        public int TotalJewelCounter { get; private set;  }
-        public int SnortedDirtCounter { get; private set;  }
-        public int SnortedJewelCounter { get; private set;  }
-        public int PickedJewelCounter { get; private set;  }
+        public double TotalDirtCounter { get; private set;  }
+        public double TotalJewelCounter { get; private set;  }
+        public double SnortedDirtCounter { get; private set;  }
+        public double SnortedJewelCounter { get; private set;  }
+        public double PickedJewelCounter { get; private set;  }
 
         private object _lock = new object();  
         public Map(int size)
         {
             Rooms = new List<Entity>(size);
             InitCounters();
-            Init();
+            InitEntities();
         }
 
         private void InitCounters()
@@ -37,33 +38,8 @@ namespace HooverAgent.Environment
             SnortedJewelCounter = 0;
             PickedJewelCounter = 0;
         }
-
-        public Map(Map other)
-        {
-            Rooms = new List<Entity>(other.Size);
-            lock (other._lock)
-            {
-                foreach (var room in other.Rooms)
-                {
-                    Rooms.Add(room);
-                }
-
-                AgentPos = other.AgentPos;
-                CopyCounter(other);
-            }
-           
-        }
-
-        private void CopyCounter(Map other)
-        {
-            TotalDirtCounter = other.TotalDirtCounter;
-            TotalJewelCounter = other.TotalJewelCounter;
-            SnortedDirtCounter = other.SnortedDirtCounter;
-            SnortedJewelCounter = other.SnortedJewelCounter;
-            PickedJewelCounter = other.PickedJewelCounter;
-        }
-
-        private void Init()
+        
+        private void InitEntities()
         {
             Random rand = new Random(2);
             for (var i = 0; i < Rooms.Capacity; i++)
@@ -76,6 +52,30 @@ namespace HooverAgent.Environment
                 }
                 
             }
+        }
+        public Map(Map other)
+        {
+            Rooms = new List<Entity>(other.Size);
+            lock (other._lock)
+            {
+                foreach (var room in other.Rooms)
+                {
+                    Rooms.Add(room);
+                }
+
+                AgentPos = other.AgentPos;
+                CopyCounters(other);
+            }
+           
+        }
+
+        private void CopyCounters(Map other)
+        {
+            TotalDirtCounter = other.TotalDirtCounter;
+            TotalJewelCounter = other.TotalJewelCounter;
+            SnortedDirtCounter = other.SnortedDirtCounter;
+            SnortedJewelCounter = other.SnortedJewelCounter;
+            PickedJewelCounter = other.PickedJewelCounter;
         }
 
         public void AddEntityAtPos(Entity flag, int pos)
@@ -184,7 +184,6 @@ namespace HooverAgent.Environment
 
         private void UpdateCounter(Action action)
         {
-//            Console.WriteLine("Dans update Counter");
             lock(_lock)
             {
                 switch (action)
@@ -193,24 +192,32 @@ namespace HooverAgent.Environment
                         
                         if (ContainsEntityAtPos(Entity.Dirt, AgentPos))
                         {
-                            Console.WriteLine("snort dust augmented: " + SnortedDirtCounter);
                             SnortedDirtCounter++;
                         }
                         if (ContainsEntityAtPos(Entity.Jewel, AgentPos))
                         {
-                            Console.WriteLine("snort jewel counter augmented: " + SnortedJewelCounter);
                             SnortedJewelCounter++;
                         }
                         break;
                     case Action.Pick:
                         if (ContainsEntityAtPos(Entity.Jewel, AgentPos))
                         {
-                            Console.WriteLine("picked jewel counter augmented: " + SnortedJewelCounter);
                             PickedJewelCounter++;
                         }
                         break;
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < Size; i++)
+            {
+                sb.Append(EntityStringer.ObjectToString(GetEntityAt(i)));
+            }
+
+            return sb.ToString();
         }
     }
 }
