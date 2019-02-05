@@ -218,12 +218,12 @@ namespace HooverAgent.Environment
             var alpha = 0.1;
             var beta = 0.2;
             var gamma = 10;
-           // Console.WriteLine("Dirt snort counter=" + state.Map.SnortedDirtCounter);
+            
             var x = state.Map.TotalDirtCounter == 0 ? 0 : state.Map.SnortedDirtCounter / state.Map.TotalDirtCounter;
             var y = state.Map.TotalJewelCounter == 0 ? 0: state.Map.PickedJewelCounter / state.Map.TotalJewelCounter;
             var z = state.Map.TotalJewelCounter == 0 ? 1 : state.Map.SnortedJewelCounter / state.Map.TotalJewelCounter;
+            
             var result = alpha * (1 - x) + beta * (1 - y) + gamma * z;
-//            Console.WriteLine("result= " + result);
             return result;
         }
     }
