@@ -50,6 +50,9 @@ namespace HooverAgent.View
         private void RenderPerf()
         {
             Console.WriteLine("Fitness : " + currentEpoch.Fitness);
+            Console.WriteLine("Dust snorted : " + currentEpoch.Map.SnortedDirtCounter);
+            Console.WriteLine("Jewel picked : " + currentEpoch.Map.PickedJewelCounter);
+            Console.WriteLine("Jewel snorted : " + currentEpoch.Map.SnortedJewelCounter);
         }
 
         private void GetNextEpoch()

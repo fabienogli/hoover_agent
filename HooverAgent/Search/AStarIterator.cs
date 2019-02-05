@@ -47,8 +47,6 @@ namespace HooverAgent.Search
                 var g = node.Cost;
                 Frontier.Enqueue(node, g + h);
             });
-           
-           
         }
     }
 }
