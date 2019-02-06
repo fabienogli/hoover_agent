@@ -12,7 +12,7 @@ namespace HooverAgent.Environment
         public Map Map { get; }
 
         private int _fitness;
-        
+
         public int Fitness => _fitness;
 
         private const double MaxDirtCoverage = 0.25;
@@ -26,7 +26,6 @@ namespace HooverAgent.Environment
             Running = true;
             Map = new Map(size);
             InitAgent();
-            
         }
 
         public Mansion(Mansion other)
@@ -75,10 +74,10 @@ namespace HooverAgent.Environment
 
         private bool ShouldGenerateDirt()
         {
-           
-            if ((double) Map.TotalJewelCounter / 100 < MaxDirtCoverage)
+            double remainingDirt = Map.TotalDirtCounter - Map.SnortedDirtCounter;
+            if (remainingDirt / Map.Size < MaxDirtCoverage)
             {
-                return Rand.Next(100) < 5;     
+                return Rand.Next(100) < 15;
             }
 
             return false;
@@ -86,11 +85,13 @@ namespace HooverAgent.Environment
 
         private bool ShouldGenerateJewel()
         {
-            if ((double) Map.TotalJewelCounter / 100 < MaxJewelCoverage)
+            double remainingJewels = Map.TotalJewelCounter - Map.PickedJewelCounter - Map.SnortedJewelCounter;
+            if (remainingJewels / Map.Size < MaxJewelCoverage)
             {
-                return Rand.Next(100) < 5;     
+                return Rand.Next(100) < 15;
             }
-            return Rand.Next(100) < 5;
+
+            return false;
         }
 
         private void GenerateDirt()
@@ -129,16 +130,16 @@ namespace HooverAgent.Environment
         {
             switch (action)
             {
-                case Action.Up: 
-                    //fallthrough
+                case Action.Up:
+                //fallthrough
                 case Action.Down:
-                    //fallthrough
+                //fallthrough
                 case Action.Left:
-                    //fallthough
+                //fallthough
                 case Action.Right:
                     _fitness += (int) Performances.Move;
                     break;
-                
+
                 case Action.Snort:
                     if (Map.ContainsEntityAtPos(Entity.Jewel, Map.AgentPos))
                     {
@@ -153,7 +154,8 @@ namespace HooverAgent.Environment
                     if (Map.GetEntityAt(Map.AgentPos) == Entity.Nothing)
                     {
                         _fitness += (int) Performances.PickNothing;
-                    } 
+                    }
+
                     break;
                 case Action.Pick:
                     if (Map.ContainsEntityAtPos(Entity.Jewel, Map.AgentPos))
@@ -161,32 +163,31 @@ namespace HooverAgent.Environment
                         _fitness += (int) Performances.PickJewel;
                     }
 
-                    if (Map.ContainsEntityAtPos(Entity.Dirt, Map.AgentPos) 
-                       || Map.GetEntityAt(Map.AgentPos) == Entity.Nothing )
+                    if (Map.ContainsEntityAtPos(Entity.Dirt, Map.AgentPos)
+                        || Map.GetEntityAt(Map.AgentPos) == Entity.Nothing)
                     {
                         _fitness += (int) Performances.PickNothing;
                     }
-                    
+
                     break;
             }
         }
 
-        public static List<State> GetSuccessors(State currentState) 
+        public static List<State> GetSuccessors(State currentState)
         {
             var successors = new List<State>();
             var values = Enum.GetValues(typeof(Action));
             foreach (Action action in values)
             {
-                
-                if(action == Action.Idle)
+                if (action == Action.Idle)
                     continue;
-                
+
                 AddStateForActionIfValid(successors, currentState, action);
             }
 
             return successors;
         }
-        
+
         private static void AddStateForActionIfValid(ICollection<State> successors, State current, Action action)
         {
             try
@@ -218,11 +219,11 @@ namespace HooverAgent.Environment
             var alpha = 0.1;
             var beta = 0.2;
             var gamma = 10;
-            
+
             var x = state.Map.TotalDirtCounter == 0 ? 0 : state.Map.SnortedDirtCounter / state.Map.TotalDirtCounter;
-            var y = state.Map.TotalJewelCounter == 0 ? 0: state.Map.PickedJewelCounter / state.Map.TotalJewelCounter;
+            var y = state.Map.TotalJewelCounter == 0 ? 0 : state.Map.PickedJewelCounter / state.Map.TotalJewelCounter;
             var z = state.Map.TotalJewelCounter == 0 ? 1 : state.Map.SnortedJewelCounter / state.Map.TotalJewelCounter;
-            
+
             var result = alpha * (1 - x) + beta * (1 - y) + gamma * z;
             return result;
         }
