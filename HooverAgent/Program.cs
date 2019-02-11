@@ -11,6 +11,24 @@ namespace HooverAgent
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Welcome to the HooverAgent simulation");
+            Console.WriteLine("Which mode whould you like to run ?");
+            Console.WriteLine("1) Normal");
+            Console.WriteLine("2) Learn (will update the optimal value for the other runs)");
+            int choice = Convert.ToInt32(Console.ReadLine());
+
+            if (choice == 2)
+            {
+                Learn();
+            }
+            else
+            {
+                Run();
+            }
+        }
+
+        static void Run()
+        {
             Mansion mansion = new Mansion(100);
             Viewer viewer = new Viewer(true);
             VacuumAgent agent = new VacuumAgent(mansion);
@@ -31,27 +49,25 @@ namespace HooverAgent
 
         static void Learn()
         {
-            Thread envThread = null;
-            Thread viewThread = null;
+            Console.WriteLine("Learning started");
 
             const int maxDepth = 6;
             const int learnSteps = 50;
 
-            Information information = new Information();
+            var information = new Information();
             
             for (var currentDepth = 1; currentDepth < maxDepth; currentDepth++)
             {
-                envThread?.Abort();
-                viewThread?.Abort();
+                
+                Console.WriteLine("Learning for depth " + currentDepth);
 
                 var mansion = new Mansion(100);
                 var viewer = new Viewer(false);
-                var agent = new VacuumAgent(mansion);
-                agent.OptimalSequenceLength = currentDepth;
+                var agent = new VacuumAgent(mansion) {OptimalSequenceLength = currentDepth};
                 viewer.Subscribe(mansion);
 
-                viewThread = new Thread(viewer.Run);
-                envThread = new Thread(mansion.Run);
+                var viewThread = new Thread(viewer.Run);
+                var envThread = new Thread(mansion.Run);
 
                 viewThread.Start();
                 envThread.Start();
@@ -70,7 +86,9 @@ namespace HooverAgent
                     information.AddPerf(currentDepth, perf);
                 }
             }
-           
+
+            Console.WriteLine(information.ToString());
+
         }
     }
 }

@@ -64,6 +64,8 @@ namespace HooverAgent.Agent
             if (ActionDone > OptimalSequenceLength)
             {
                 Intents.Clear();
+                ActionDone = 0;
+                return;
             }
 
             if (Intents.Any())
@@ -82,8 +84,11 @@ namespace HooverAgent.Agent
         public int Learn()
         {
             var oldPerf = Performance;
-            Step();
-            Performance = PerformanceSensor.Observe(Environment);
+            do
+            {
+                Step();
+            } while (Intents.Any());
+            var newPerf =  PerformanceSensor.Observe(Environment);
 
             return oldPerf - Performance;
         }
