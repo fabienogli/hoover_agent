@@ -28,7 +28,8 @@ namespace HooverAgent.Agent
 
         private int ActionDone { get; set; }
 
-        public VacuumAgent(Mansion environment)
+        private bool IsInformed { get; }
+        public VacuumAgent(Mansion environment, bool informed)
         {
             Environment = environment;
             RoomSensor = new RoomSensor();
@@ -37,6 +38,7 @@ namespace HooverAgent.Agent
             Intents = new Queue<Action>();
             OptimalSequenceLength = ReadOptimalFromFileOrDefault(MaxDepth);
             ActionDone = 0;
+            IsInformed = informed;
         }
 
         private static int ReadOptimalFromFileOrDefault(int defaultValue)
@@ -109,17 +111,18 @@ namespace HooverAgent.Agent
             return Performance - oldPerf;
         }
 
+        
         private void PlanIntents(Map actual)
         {
             var state = new State(actual, Action.Idle);
             var tree = new Tree(new Tree.Node(state));
-            var strategy = new AStarIterator(tree);
+            var strategy = SetStrategy(tree);
             Tree.Node node = null;
             while (strategy.HasNext())
             {
                 node = strategy.GetNext();
 
-                if (IsGoalNode(node) || node.Depth == MaxDepth)
+                if (IsGoalNode(node, strategy) || node.Depth == MaxDepth)
                 {
                     break;
                 }
@@ -128,6 +131,16 @@ namespace HooverAgent.Agent
             }
 
             BacktrackAndBuildIntents(node);
+        }
+
+        private Iterator<Tree.Node> SetStrategy(Tree tree)
+        {
+            if (IsInformed)
+            {
+                return new AStarIterator(tree);
+            }
+            
+            return new BFSIterator(tree);
         }
 
         private void BacktrackAndBuildIntents(Tree.Node node)
@@ -147,9 +160,30 @@ namespace HooverAgent.Agent
             Intents.Enqueue(intent);
         }
 
-        private bool IsGoalNode(Tree.Node node)
+        private bool IsGoalNode(Tree.Node node, Iterator<Tree.Node> strategy) 
         {
-            return false;
+            if (strategy.GetType() == typeof(AStarIterator))
+            {
+                return false;
+            }
+
+            if (node.Parent == null)
+            {
+                return false;
+            }
+
+            var oldJewelCounter = node.Parent.State.Map.PickedJewelCounter;
+            var oldDirtCounter = node.Parent.State.Map.SnortedDirtCounter;
+            var oldJewelSnortedCounter = node.Parent.State.Map.SnortedJewelCounter;
+
+            var newJewelCounter = node.State.Map.PickedJewelCounter;
+            var newDirtCounter = node.State.Map.SnortedDirtCounter;
+            var newJewelSnortedCounter = node.State.Map.SnortedJewelCounter;
+    
+            bool noJewelSnorted = Math.Abs(newJewelSnortedCounter - oldJewelSnortedCounter) < 0.0001;
+            bool goal1 = oldJewelCounter < newJewelCounter && noJewelSnorted;
+            bool goal2 = oldDirtCounter < newDirtCounter && noJewelSnorted;
+            return goal1 || goal2;
         }
 
         bool IsGoalReached()

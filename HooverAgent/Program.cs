@@ -30,9 +30,16 @@ namespace HooverAgent
 
         private static void Run()
         {
+            
+            Console.WriteLine("Which type of search would you like to run ?");
+            Console.WriteLine("1) Informed");
+            Console.WriteLine("2) Non-Informed");
+            var choice = Convert.ToInt32(Console.ReadLine());
+            bool informed = choice != 2;
+
             var mansion = new Mansion(100);
             var viewer = new Viewer(true);
-            var agent = new VacuumAgent(mansion);
+            var agent = new VacuumAgent(mansion, informed);
             viewer.Subscribe(mansion);
 
             ThreadStart viewStarter = viewer.Run;
@@ -64,7 +71,7 @@ namespace HooverAgent
 
                 var mansion = new Mansion(100);
                 var viewer = new Viewer(false);
-                var agent = new VacuumAgent(mansion) {OptimalSequenceLength = currentDepth};
+                var agent = new VacuumAgent(mansion, true) {OptimalSequenceLength = currentDepth};
                 viewer.Subscribe(mansion);
 
                 var viewThread = new Thread(viewer.Run);
