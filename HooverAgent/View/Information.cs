@@ -66,22 +66,23 @@ namespace HooverAgent.View
             for (int depthCount = 0; depthCount < depthLines.Length; depthCount++)
             {
                 string[] rawLine = depthLines[depthCount].Split(DEPTH_START);
-                if (rawLine.Length < 2 || rawLine[0].Split(DEPTH_START).Length < 2 ||
-                    rawLine[1].Split(DEPTH_SEPARATOR).Length < 2)
+                if (rawLine.Length < 2)
+                {
+                    continue;                    
+                } 
+                if (rawLine[0].Split(DEPTH).Length < 2 || rawLine[1].Split(TRY_SEPARATOR).Length < 2)
                 {
                     continue;
                 }
-
-                int depth = int.Parse(rawLine[0].Split(DEPTH_START)[1]);
-                string[] rawPerfs = rawLine[1].Split(DEPTH_SEPARATOR);
-                for (int perfCount = 0; perfCount < rawPerfs.Length; perfCount++)
+                int depth = int.Parse(rawLine[0].Split(DEPTH)[1]);
+                string[]rawPerfs = rawLine[1].Split(TRY_SEPARATOR);
+                for (int perfCount = 0; perfCount < rawPerfs.Length -1; perfCount++) //because the last one is empty
                 {
+                    Console.WriteLine(rawPerfs[perfCount]);
                     information.AddPerf(depth, float.Parse(rawPerfs[perfCount]));
                 }
             }
-
-            Console.WriteLine("imported:");
-            Console.Write(information);
+            Console.WriteLine("Imported from " + FileName);
             return information;
         }
 
