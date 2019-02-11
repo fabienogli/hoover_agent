@@ -21,6 +21,8 @@ namespace HooverAgent.Agent
 
         private int Performance { get; set; }
         private Queue<Action> Intents { get; }
+        
+        private int OptimalSequenceLength { get; }  
 
         public MyAgent(Mansion environment)
         {
@@ -29,25 +31,34 @@ namespace HooverAgent.Agent
             PerformanceSensor = new PerformanceSensor();
             Effector = new Effector();
             Intents = new Queue<Action>();
+            
+            //todo Set with correct optimal length !!
+            OptimalSequenceLength = 10; 
         }
 
         public void Run()
         {
+            var actionDone = 0;
             while (true)
             {
-                Beliefs = RoomSensor.observe(Environment);
-                Performance = PerformanceSensor.observe(Environment);
-                //@TODO know either we stock all the past or not
+                Beliefs = RoomSensor.Observe(Environment);
+                Performance = PerformanceSensor.Observe(Environment);
 
                 if (IsGoalReached())
                 {
                     break;
                 }
 
+                if (actionDone > OptimalSequenceLength)
+                {
+                    Intents.Clear();
+                }
+
                 if (Intents.Any())
                 {
                     Action intent = Intents.Dequeue();
                     Effector.DoIt(intent, Environment);
+                    actionDone++;
                 }
                 else
                 {
