@@ -71,7 +71,7 @@ namespace HooverAgent.View
                 string[]rawPerfs = rawLine[1].Split(DEPTH_SEPARATOR);
                 for (int perfCount = 0; perfCount < rawPerfs.Length; perfCount++)
                 {
-                    information.addPerf(depth, float.Parse(rawPerfs[perfCount]));
+                    information.AddPerf(depth, float.Parse(rawPerfs[perfCount]));
                 }
             }
             Console.WriteLine("imported:");
