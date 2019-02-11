@@ -4,7 +4,7 @@ namespace HooverAgent.Agent
 {
     public class PerformanceSensor : Sensor<int>
     {
-        public int observe(Mansion env)
+        public int Observe(Mansion env)
         {
             return env.Fitness;
         }

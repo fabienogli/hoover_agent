@@ -5,7 +5,7 @@ namespace HooverAgent.Agent
 {
     public class RoomSensor : Sensor<Map>
     {
-        public Map observe(Mansion env)
+        public Map Observe(Mansion env)
         {
             return new Map(env.Map);
         }

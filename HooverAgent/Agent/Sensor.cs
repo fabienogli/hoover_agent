@@ -4,6 +4,6 @@ namespace HooverAgent.Agent
 {
     public interface Sensor<T>
     {
-        T observe(Mansion env);
+        T Observe(Mansion env);
     }
 }
