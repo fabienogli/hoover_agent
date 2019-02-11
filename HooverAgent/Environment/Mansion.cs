@@ -216,13 +216,13 @@ namespace HooverAgent.Environment
 
         public static double GetHeuristicForState(State state)
         {
-            var alpha = 0.1;
-            var beta = 0.2;
+            var alpha = 1;
+            var beta = 1.5;
             var gamma = 10;
 
-            var x = state.Map.TotalDirtCounter == 0 ? 0 : state.Map.SnortedDirtCounter / state.Map.TotalDirtCounter;
-            var y = state.Map.TotalJewelCounter == 0 ? 0 : state.Map.PickedJewelCounter / state.Map.TotalJewelCounter;
-            var z = state.Map.TotalJewelCounter == 0 ? 1 : state.Map.SnortedJewelCounter / state.Map.TotalJewelCounter;
+            var x = Math.Abs(state.Map.TotalDirtCounter) < 0.0001 ? 0 : state.Map.SnortedDirtCounter / state.Map.TotalDirtCounter;
+            var y = Math.Abs(state.Map.TotalJewelCounter) < 0.0001 ? 0 : state.Map.PickedJewelCounter / state.Map.TotalJewelCounter;
+            var z = Math.Abs(state.Map.TotalJewelCounter) < 0.0001 ? 1 : state.Map.SnortedJewelCounter / state.Map.TotalJewelCounter;
 
             var result = alpha * (1 - x) + beta * (1 - y) + gamma * z;
             return result;
