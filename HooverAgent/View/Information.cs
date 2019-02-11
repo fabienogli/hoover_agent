@@ -49,10 +49,10 @@ namespace HooverAgent.View
             return stringBuilder.ToString();
         }
 
-        public static void Save(Information information)
+        public void Save()
         {
             Console.WriteLine("Saved to " + FileName);
-            File.WriteAllText(FileName,information.ToString());
+            File.WriteAllText(FileName,ToString());
         }
         
         public static Information Import()
