@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using HooverAgent.Agent;
 using HooverAgent.Environment;
@@ -15,7 +16,7 @@ namespace HooverAgent
             Console.WriteLine("Which mode would you like to run ?");
             Console.WriteLine("1) Normal");
             Console.WriteLine("2) Learn (will update the optimal value for the other runs)");
-            int choice = Convert.ToInt32(Console.ReadLine());
+            var choice = Convert.ToInt32(Console.ReadLine());
 
             if (choice == 2)
             {
@@ -27,11 +28,11 @@ namespace HooverAgent
             }
         }
 
-        static void Run()
+        private static void Run()
         {
-            Mansion mansion = new Mansion(100);
-            Viewer viewer = new Viewer(true);
-            VacuumAgent agent = new VacuumAgent(mansion);
+            var mansion = new Mansion(100);
+            var viewer = new Viewer(true);
+            var agent = new VacuumAgent(mansion);
             viewer.Subscribe(mansion);
 
             ThreadStart viewStarter = viewer.Run;
@@ -47,12 +48,12 @@ namespace HooverAgent
             agentThread.Start();
         }
 
-        static void Learn()
+        private static void Learn()
         {
             Console.WriteLine("Learning started");
 
             const int maxDepth = 6;
-            const int learnSteps = 50;
+            const int learnSteps = 5;
 
             var information = new Information();
             
@@ -89,6 +90,11 @@ namespace HooverAgent
 
             Console.WriteLine(information.ToString());
             information.Save();
+            var depth = information.GetDepthWithBestMean();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Optimal depth : " + depth);
+            Console.ForegroundColor = ConsoleColor.White;
+            File.WriteAllText("optimal", depth.ToString());
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using HooverAgent.Environment;
@@ -10,6 +11,7 @@ namespace HooverAgent.Agent
 {
     public class VacuumAgent
     {
+        private const string OptimalFile = "optimal";
         private const int MaxDepth = 5;
         private RoomSensor RoomSensor { get; }
         private PerformanceSensor PerformanceSensor { get; }
@@ -21,9 +23,9 @@ namespace HooverAgent.Agent
 
         private int Performance { get; set; }
         private Queue<Action> Intents { get; }
-        
-        public int OptimalSequenceLength { private get; set; }  
-        
+
+        public int OptimalSequenceLength { private get; set; }
+
         private int ActionDone { get; set; }
 
         public VacuumAgent(Mansion environment)
@@ -33,24 +35,37 @@ namespace HooverAgent.Agent
             PerformanceSensor = new PerformanceSensor();
             Effector = new Effector();
             Intents = new Queue<Action>();
-            
-            //todo Set with correct optimal length !!
-            OptimalSequenceLength = 10;
+            OptimalSequenceLength = ReadOptimalFromFileOrDefault(MaxDepth);
             ActionDone = 0;
+        }
+
+        private static int ReadOptimalFromFileOrDefault(int defaultValue)
+        {
+            try
+            {
+                using (TextReader reader = File.OpenText(OptimalFile))
+                {
+                    return int.Parse(reader.ReadLine());
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                return defaultValue;
+            }
         }
 
         public void Run()
         {
-            
+           
             while (true)
             {
                 if (IsGoalReached())
                 {
                     break;
                 }
-                
+
                 Step();
-                
+
                 Thread.Sleep(200);
             }
         }
@@ -88,9 +103,10 @@ namespace HooverAgent.Agent
             {
                 Step();
             } while (Intents.Any());
-            var newPerf =  PerformanceSensor.Observe(Environment);
 
-            return oldPerf - Performance;
+            var newPerf = PerformanceSensor.Observe(Environment);
+
+            return Performance - oldPerf;
         }
 
         private void PlanIntents(Map actual)
@@ -112,7 +128,6 @@ namespace HooverAgent.Agent
             }
 
             BacktrackAndBuildIntents(node);
-            
         }
 
         private void BacktrackAndBuildIntents(Tree.Node node)
