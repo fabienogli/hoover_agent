@@ -12,7 +12,7 @@ namespace HooverAgent
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to the HooverAgent simulation");
-            Console.WriteLine("Which mode whould you like to run ?");
+            Console.WriteLine("Which mode would you like to run ?");
             Console.WriteLine("1) Normal");
             Console.WriteLine("2) Learn (will update the optimal value for the other runs)");
             int choice = Convert.ToInt32(Console.ReadLine());
