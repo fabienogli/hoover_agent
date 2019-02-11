@@ -8,7 +8,7 @@ using Action = HooverAgent.Environment.Action;
 
 namespace HooverAgent.Agent
 {
-    public class MyAgent
+    public class VacuumAgent
     {
         private const int MaxDepth = 5;
         private RoomSensor RoomSensor { get; }
@@ -22,9 +22,11 @@ namespace HooverAgent.Agent
         private int Performance { get; set; }
         private Queue<Action> Intents { get; }
         
-        private int OptimalSequenceLength { get; }  
+        public int OptimalSequenceLength { private get; set; }  
+        
+        private int ActionDone { get; set; }
 
-        public MyAgent(Mansion environment)
+        public VacuumAgent(Mansion environment)
         {
             Environment = environment;
             RoomSensor = new RoomSensor();
@@ -33,40 +35,57 @@ namespace HooverAgent.Agent
             Intents = new Queue<Action>();
             
             //todo Set with correct optimal length !!
-            OptimalSequenceLength = 10; 
+            OptimalSequenceLength = 10;
+            ActionDone = 0;
         }
 
         public void Run()
         {
-            var actionDone = 0;
+            
             while (true)
             {
-                Beliefs = RoomSensor.Observe(Environment);
-                Performance = PerformanceSensor.Observe(Environment);
-
                 if (IsGoalReached())
                 {
                     break;
                 }
-
-                if (actionDone > OptimalSequenceLength)
-                {
-                    Intents.Clear();
-                }
-
-                if (Intents.Any())
-                {
-                    Action intent = Intents.Dequeue();
-                    Effector.DoIt(intent, Environment);
-                    actionDone++;
-                }
-                else
-                {
-                    PlanIntents(Beliefs);
-                }
-
+                
+                Step();
+                
                 Thread.Sleep(200);
             }
+        }
+
+        private void Step()
+        {
+            Beliefs = RoomSensor.Observe(Environment);
+            Performance = PerformanceSensor.Observe(Environment);
+
+
+            if (ActionDone > OptimalSequenceLength)
+            {
+                Intents.Clear();
+            }
+
+            if (Intents.Any())
+            {
+                var intent = Intents.Dequeue();
+                Effector.DoIt(intent, Environment);
+                ActionDone++;
+            }
+            else
+            {
+                ActionDone = 0;
+                PlanIntents(Beliefs);
+            }
+        }
+
+        public int Learn()
+        {
+            var oldPerf = Performance;
+            Step();
+            Performance = PerformanceSensor.Observe(Environment);
+
+            return oldPerf - Performance;
         }
 
         private void PlanIntents(Map actual)

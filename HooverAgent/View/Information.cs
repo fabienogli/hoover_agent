@@ -7,14 +7,14 @@ namespace HooverAgent.View
     [Serializable]
     public class Information
     {
-        private Dictionary<int, List<float>> Performances { get; set; }
+        private Dictionary<int, List<float>> Performances { get; }
 
         public Information()
         {
             Performances = new Dictionary<int, List<float>>();
         }
 
-        public void addPerf(int n, float perf)
+        public void AddPerf(int n, float perf)
         {
             if (!Performances.ContainsKey(n))
             {

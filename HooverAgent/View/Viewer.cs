@@ -14,8 +14,11 @@ namespace HooverAgent.View
 
         private bool Running { get; set; }
 
-        public Viewer()
+        private bool Display { get; }
+
+        public Viewer(bool display)
         {
+            Display = display;
             Running = true;
             epochs = new Queue<Mansion>();
         }
@@ -40,6 +43,11 @@ namespace HooverAgent.View
 
         private void Render()
         {
+            //For learning phase, we don't want to display, but we keep the Notify calls in case we want to have some logs
+            if (!Display)
+            {
+                return;
+            }
             Console.Clear();
             GetNextEpoch();
             RenderLegend();
@@ -69,12 +77,13 @@ namespace HooverAgent.View
             string dirt = EntityStringer.ObjectToString(Entity.Dirt);
             string jewel = EntityStringer.ObjectToString(Entity.Jewel);
             string all = EntityStringer.ObjectToString(Entity.Dirt | Entity.Jewel | Entity.Agent);
-            
+
             string dirtAgent = EntityStringer.ObjectToString(Entity.Agent | Entity.Dirt);
             string jewelAgent = EntityStringer.ObjectToString(Entity.Agent | Entity.Jewel);
             string dirtJewel = EntityStringer.ObjectToString(Entity.Dirt | Entity.Jewel);
             string empty = EntityStringer.ObjectToString(Entity.Nothing);
-            string legend = $"{agent}=agent {dirt}=dirt {jewel}=jewel {all}=all {dirtAgent}=dirt+agent {jewelAgent}=jewel+agent {dirtJewel}=dirt+jewel {empty}=empty";
+            string legend =
+                $"{agent}=agent {dirt}=dirt {jewel}=jewel {all}=all {dirtAgent}=dirt+agent {jewelAgent}=jewel+agent {dirtJewel}=dirt+jewel {empty}=empty";
             Console.WriteLine(legend);
         }
 
@@ -85,7 +94,6 @@ namespace HooverAgent.View
             StringBuilder sb = new StringBuilder();
             for (int col = 0; col < size; col++)
             {
-                
                 for (int row = 0; row < size; row++)
                 {
                     Entity obj = currentEpoch.Map.GetEntityAt(Convert2DTo1D(row, col));
@@ -94,12 +102,14 @@ namespace HooverAgent.View
                     {
                         sb.Append("| ");
                     }
+
                     sb.Append(objectString)
-                      .Append(" | ");
+                        .Append(" | ");
                 }
 
                 sb.Append(System.Environment.NewLine);
             }
+
             Console.Write(sb.ToString());
         }
 
@@ -107,7 +117,7 @@ namespace HooverAgent.View
         private int Convert2DTo1D(int col, int row)
         {
             var rowLength = currentEpoch.Map.SquaredSize;
-            
+
             return row * rowLength + col;
         }
 
