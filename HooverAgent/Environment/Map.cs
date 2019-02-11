@@ -219,5 +219,10 @@ namespace HooverAgent.Environment
 
             return sb.ToString();
         }
+
+        public void ApplySnort()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

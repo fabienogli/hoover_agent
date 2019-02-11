@@ -15,7 +15,8 @@ namespace HooverAgent.Agent
         private const int MaxDepth = 5;
         private RoomSensor RoomSensor { get; }
         private PerformanceSensor PerformanceSensor { get; }
-        private Effector Effector { get; }
+
+        private Dictionary<Action, Effector> Effectors { get; }
 
         private Mansion Environment { get; }
 
@@ -33,12 +34,13 @@ namespace HooverAgent.Agent
         {
             Environment = environment;
             RoomSensor = new RoomSensor();
+            
             PerformanceSensor = new PerformanceSensor();
-            Effector = new Effector();
             Intents = new Queue<Action>();
             OptimalSequenceLength = ReadOptimalFromFileOrDefault(MaxDepth);
             ActionDone = 0;
             IsInformed = informed;
+            Effectors = EffectorFactory.GetActionEffectorDictionary(environment);
         }
 
         private static int ReadOptimalFromFileOrDefault(int defaultValue)
@@ -77,7 +79,6 @@ namespace HooverAgent.Agent
             Beliefs = RoomSensor.Observe(Environment);
             Performance = PerformanceSensor.Observe(Environment);
 
-
             if (ActionDone > OptimalSequenceLength)
             {
                 Intents.Clear();
@@ -88,7 +89,8 @@ namespace HooverAgent.Agent
             if (Intents.Any())
             {
                 var intent = Intents.Dequeue();
-                Effector.DoIt(intent, Environment);
+                var effector = Effectors[intent];
+                effector.DoIt();
                 ActionDone++;
             }
             else
@@ -108,9 +110,8 @@ namespace HooverAgent.Agent
 
             var newPerf = PerformanceSensor.Observe(Environment);
 
-            return Performance - oldPerf;
+            return newPerf - oldPerf;
         }
-
         
         private void PlanIntents(Map actual)
         {

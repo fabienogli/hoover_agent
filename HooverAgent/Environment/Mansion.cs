@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 namespace HooverAgent.Environment
@@ -11,9 +12,8 @@ namespace HooverAgent.Environment
         private Random Rand { get; }
         public Map Map { get; }
 
-        private int _fitness;
+        public int Fitness { get; set; }
 
-        public int Fitness => _fitness;
 
         private const double MaxDirtCoverage = 0.25;
         private const double MaxJewelCoverage = 0.25;
@@ -31,7 +31,7 @@ namespace HooverAgent.Environment
         public Mansion(Mansion other)
         {
             Map = new Map(other.Map);
-            _fitness = other._fitness;
+            Fitness = other.Fitness;
         }
 
         private void InitAgent()
@@ -39,7 +39,7 @@ namespace HooverAgent.Environment
             var agentPos = Rand.Next(Map.Size);
             Map.AddEntityAtPos(Entity.Agent, agentPos);
             Map.AgentPos = agentPos;
-            _fitness = 0;
+            Fitness = 0;
         }
 
         public IDisposable Subscribe(IObserver<Mansion> observer)
@@ -118,59 +118,54 @@ namespace HooverAgent.Environment
             Notify();
         }
 
-        public bool HandleRequest(Action action)
+        public bool HandleMovement(Action action)
         {
-            UpdateFitness(action);
-            Map.ApplyAction(action);
-            Notify();
+            Fitness += (int) Performances.Move;
+            ApplyAndNotify(action);
             return true;
         }
 
-        private void UpdateFitness(Action action)
+        public bool HandleSnort()
         {
-            switch (action)
+            if (Map.ContainsEntityAtPos(Entity.Jewel, Map.AgentPos))
             {
-                case Action.Up:
-                //fallthrough
-                case Action.Down:
-                //fallthrough
-                case Action.Left:
-                //fallthough
-                case Action.Right:
-                    _fitness += (int) Performances.Move;
-                    break;
-
-                case Action.Snort:
-                    if (Map.ContainsEntityAtPos(Entity.Jewel, Map.AgentPos))
-                    {
-                        _fitness += (int) Performances.SnortJewel;
-                    }
-
-                    if (Map.ContainsEntityAtPos(Entity.Dirt, Map.AgentPos))
-                    {
-                        _fitness += (int) Performances.SnortDirt;
-                    }
-
-                    if (Map.GetEntityAt(Map.AgentPos) == Entity.Nothing)
-                    {
-                        _fitness += (int) Performances.PickNothing;
-                    }
-
-                    break;
-                case Action.Pick:
-                    if (Map.ContainsEntityAtPos(Entity.Jewel, Map.AgentPos))
-                    {
-                        _fitness += (int) Performances.PickJewel;
-                    }
-
-                    if (Map.ContainsEntityAtPos(Entity.Dirt, Map.AgentPos)
-                        || Map.GetEntityAt(Map.AgentPos) == Entity.Nothing)
-                    {
-                        _fitness += (int) Performances.PickNothing;
-                    }
-
-                    break;
+                Fitness += (int) Performances.SnortJewel;
             }
+
+            if (Map.ContainsEntityAtPos(Entity.Dirt, Map.AgentPos))
+            {
+                Fitness += (int) Performances.SnortDirt;
+            }
+
+            if (Map.GetEntityAt(Map.AgentPos) == Entity.Nothing)
+            {
+                Fitness += (int) Performances.PickNothing;
+            }
+
+            ApplyAndNotify(Action.Snort);
+            return true;
+        }
+
+        public bool HandlePick()
+        {
+            if (Map.ContainsEntityAtPos(Entity.Jewel, Map.AgentPos))
+            {
+                Fitness += (int) Performances.PickJewel;
+            }
+
+            if (Map.ContainsEntityAtPos(Entity.Dirt, Map.AgentPos)
+                || Map.GetEntityAt(Map.AgentPos) == Entity.Nothing)
+            {
+                Fitness += (int) Performances.PickNothing;
+            }
+            ApplyAndNotify(Action.Pick);
+            return true;
+        }
+
+        private void ApplyAndNotify(Action action)
+        {
+            Map.ApplyAction(action);
+            Notify();
         }
 
         public static List<State> GetSuccessors(State currentState)
@@ -220,9 +215,15 @@ namespace HooverAgent.Environment
             var beta = 1.5;
             var gamma = 10;
 
-            var x = Math.Abs(state.Map.TotalDirtCounter) < 0.0001 ? 0 : state.Map.SnortedDirtCounter / state.Map.TotalDirtCounter;
-            var y = Math.Abs(state.Map.TotalJewelCounter) < 0.0001 ? 0 : state.Map.PickedJewelCounter / state.Map.TotalJewelCounter;
-            var z = Math.Abs(state.Map.TotalJewelCounter) < 0.0001 ? 1 : state.Map.SnortedJewelCounter / state.Map.TotalJewelCounter;
+            var x = Math.Abs(state.Map.TotalDirtCounter) < 0.0001
+                ? 0
+                : state.Map.SnortedDirtCounter / state.Map.TotalDirtCounter;
+            var y = Math.Abs(state.Map.TotalJewelCounter) < 0.0001
+                ? 0
+                : state.Map.PickedJewelCounter / state.Map.TotalJewelCounter;
+            var z = Math.Abs(state.Map.TotalJewelCounter) < 0.0001
+                ? 1
+                : state.Map.SnortedJewelCounter / state.Map.TotalJewelCounter;
 
             var result = alpha * (1 - x) + beta * (1 - y) + gamma * z;
             return result;
