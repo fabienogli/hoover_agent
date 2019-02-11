@@ -26,6 +26,7 @@ namespace HooverAgent.View
             {
                 Performances.Add(n, new List<float>());
             }
+
             Performances[n].Add(perf);
         }
 
@@ -33,7 +34,7 @@ namespace HooverAgent.View
         {
             StringBuilder stringBuilder = new StringBuilder();
 
-            
+
             foreach (KeyValuePair<int, List<float>> entry in Performances)
             {
                 stringBuilder.Append(DEPTH)
@@ -44,17 +45,19 @@ namespace HooverAgent.View
                     stringBuilder.Append(entry.Value[i])
                         .Append(TRY_SEPARATOR);
                 }
+
                 stringBuilder.Append(DEPTH_SEPARATOR);
             }
+
             return stringBuilder.ToString();
         }
 
         public void Save()
         {
             Console.WriteLine("Saved to " + FileName);
-            File.WriteAllText(FileName,ToString());
+            File.WriteAllText(FileName, ToString());
         }
-        
+
         public static Information Import()
         {
             string rawLines = File.ReadAllText(FileName);
@@ -63,20 +66,53 @@ namespace HooverAgent.View
             for (int depthCount = 0; depthCount < depthLines.Length; depthCount++)
             {
                 string[] rawLine = depthLines[depthCount].Split(DEPTH_START);
-                if (rawLine.Length < 2 || rawLine[0].Split(DEPTH_START).Length < 2 || rawLine[1].Split(DEPTH_SEPARATOR).Length < 2)
+                if (rawLine.Length < 2 || rawLine[0].Split(DEPTH_START).Length < 2 ||
+                    rawLine[1].Split(DEPTH_SEPARATOR).Length < 2)
                 {
                     continue;
                 }
+
                 int depth = int.Parse(rawLine[0].Split(DEPTH_START)[1]);
-                string[]rawPerfs = rawLine[1].Split(DEPTH_SEPARATOR);
+                string[] rawPerfs = rawLine[1].Split(DEPTH_SEPARATOR);
                 for (int perfCount = 0; perfCount < rawPerfs.Length; perfCount++)
                 {
                     information.AddPerf(depth, float.Parse(rawPerfs[perfCount]));
                 }
             }
+
             Console.WriteLine("imported:");
             Console.Write(information);
             return information;
-        } 
+        }
+
+        public int GetDepthWithBestMean()
+        {
+            var maxMean = float.MinValue;
+            var bestN = -1;
+            foreach (var (depth, _) in Performances)
+            {
+                var mean = ProcessMeanForDepth(depth);
+                if (mean > maxMean)
+                {
+                    maxMean = mean;
+                    bestN = depth;
+                }
+            }
+
+            return bestN;
+        }
+
+        private float ProcessMeanForDepth(int n)
+        {
+            float mean = 0;
+            var performances = Performances[n];
+            foreach (var perf in performances)
+            {
+                mean += perf;
+            }
+
+            mean /= performances.Count;
+            return mean;
+        }
     }
 }
