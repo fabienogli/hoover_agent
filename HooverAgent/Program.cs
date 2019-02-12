@@ -59,7 +59,7 @@ namespace HooverAgent
         {
             Console.WriteLine("Learning started");
 
-            const int maxDepth = 6;
+            const int maxDepth = VacuumAgent.MaxDepth;
             const int learnSteps = 5;
 
             var information = new Information();
@@ -94,8 +94,6 @@ namespace HooverAgent
                     information.AddPerf(currentDepth, perf);
                 }
             }
-
-            Console.WriteLine(information.ToString());
             information.Save();
             var depth = information.GetDepthWithBestMean();
             Console.ForegroundColor = ConsoleColor.Red;

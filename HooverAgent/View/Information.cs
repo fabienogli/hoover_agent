@@ -54,38 +54,8 @@ namespace HooverAgent.View
 
         public void Save()
         {
-            Console.WriteLine("Saved to " + FileName);
             File.WriteAllText(FileName, ToString());
         }
-
-        public static Information Import()
-        {
-            string rawLines = File.ReadAllText(FileName);
-            string[] depthLines = rawLines.Split(DEPTH_SEPARATOR);
-            Information information = new Information();
-            for (int depthCount = 0; depthCount < depthLines.Length; depthCount++)
-            {
-                string[] rawLine = depthLines[depthCount].Split(DEPTH_START);
-                if (rawLine.Length < 2)
-                {
-                    continue;                    
-                } 
-                if (rawLine[0].Split(DEPTH).Length < 2 || rawLine[1].Split(TRY_SEPARATOR).Length < 2)
-                {
-                    continue;
-                }
-                int depth = int.Parse(rawLine[0].Split(DEPTH)[1]);
-                string[]rawPerfs = rawLine[1].Split(TRY_SEPARATOR);
-                for (int perfCount = 0; perfCount < rawPerfs.Length -1; perfCount++) //because the last one is empty
-                {
-                    Console.WriteLine(rawPerfs[perfCount]);
-                    information.AddPerf(depth, float.Parse(rawPerfs[perfCount]));
-                }
-            }
-            Console.WriteLine("Imported from " + FileName);
-            return information;
-        }
-
         public int GetDepthWithBestMean()
         {
             var maxMean = float.MinValue;

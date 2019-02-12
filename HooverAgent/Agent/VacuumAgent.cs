@@ -12,7 +12,7 @@ namespace HooverAgent.Agent
     public class VacuumAgent
     {
         private const string OptimalFile = "optimal";
-        private const int MaxDepth = 5;
+        public const int MaxDepth = 5;
         private RoomSensor RoomSensor { get; }
         private PerformanceSensor PerformanceSensor { get; }
 
